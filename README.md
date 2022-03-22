@@ -21,3 +21,17 @@ If the project goes pretty well, we also plan to apply two of them on some appli
 
 We hope to see the tradeoff between code quality and speedup so the startup companies and the communities would be able to develop their own library with high parallelism performance, without need to find existing library with a lot of restricts.
 
+Some of the specific algorithms we plan to implement are the following - 
+
+Randomized Minimum Spanning Tree (MST) in Expected O(n) - http://www.cs.cmu.edu/~guyb/paralg/papers/KargerKleinTarjan95.pdf
+
+Randomized Incremental Convex Hull - http://www.cs.cmu.edu/~guyb/paralg/papers/BlellochGuShunSun20.pdf
+
+Parallel Cartesian Tree Construction - http://www.cs.cmu.edu/~guyb/paralg/papers/ShunBlelloch14.pdf
+
+Parallel Strongly Connected Components (SCC) - http://www.cs.cmu.edu/~guyb/paralg/papers/CoppersmithFHP.pdf
+
+Suffix Array Construction in O(n) - http://www.cs.cmu.edu/~guyb/paralg/papers/KarkkainenSanders03.pdf
+
+We aim to finish at least 3 algorithms. Many of these algorithms have not been implemented before so this is an interesting problem. This project will highlight the profound relationship between randomized algorithms and work efficient parallel algorithms and the place that randomness and divide and conquer occupies within the realm of designing parallel algorithms. 
+
