@@ -50,8 +50,11 @@ The challenge lies in the fact that even the sequential implementation of suffix
 We plan to start from scratch. Here are the papers we will be referencing:
 
 https://cp-algorithms.com/string/suffix-array.html (description of O(nlogn) algorithm
+
 http://www.cs.cmu.edu/~guyb/paralg/papers/KarkkainenSanders03.pdf (original paper on skew algorithm)
+
 http://algo2.iti.kit.edu/sanders/papers/KulSan06a.pdf (parallel version of skew algorithm)
+
 https://arxiv.org/pdf/1610.08305.pdf (a very recent algorithm for O(n) construction with constant space)
 
 We will be programming on the CPU on the GHC machines. 
