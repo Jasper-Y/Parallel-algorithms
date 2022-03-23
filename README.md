@@ -34,6 +34,8 @@ After sorting the indices based on the suffix starting at that index, we get
 | na$           | 4           | 
 | nana$         | 2           | 
 
+Thus, our suffix array is [6,5,3,1,0,4,2].
+
 With more powerful computing machine and network, the latency of the web services has more attention from the users and some real-time application can be fulfilled such as robotic applications. Some of the algorithms in the heterogeneous database platforms have the library running in parallel but some not. Some companies in the industry also don't have enough humen resources to optimize their own library in parallel. 
 
 In this project, we'd like to focus on developing parallel algorithms and applying on some applications. We will implement algorithms with different data structures, including lists, trees, and graphs. With different data structure, we are aiming at different algorithms, i.e., parallelizing sorting with lists/arrays, traversing on trees, searching on trees and graphs. Some of them have been optimized a lot by researchers. In that case, we will implement the algorithms first and analyze the speedup comparing with the simple sequential implementation. For those algorithms that are not generally adopted by the companies, we will also analyze the reason why they are not welcome by the industry and what they can benefit from utilizing our parallel implementation.
