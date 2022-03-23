@@ -36,31 +36,23 @@ After sorting the indices based on the suffix starting at that index, we get
 
 Thus, our suffix array is [6,5,3,1,0,4,2].
 
-With more powerful computing machine and network, the latency of the web services has more attention from the users and some real-time application can be fulfilled such as robotic applications. Some of the algorithms in the heterogeneous database platforms have the library running in parallel but some not. Some companies in the industry also don't have enough humen resources to optimize their own library in parallel. 
+Although not immediately clear, suffix arrays have numerous applications in string problems such as longest palindromic substring, needle in haystack string search, longest common substring, and longest repeating substring. 
 
-In this project, we'd like to focus on developing parallel algorithms and applying on some applications. We will implement algorithms with different data structures, including lists, trees, and graphs. With different data structure, we are aiming at different algorithms, i.e., parallelizing sorting with lists/arrays, traversing on trees, searching on trees and graphs. Some of them have been optimized a lot by researchers. In that case, we will implement the algorithms first and analyze the speedup comparing with the simple sequential implementation. For those algorithms that are not generally adopted by the companies, we will also analyze the reason why they are not welcome by the industry and what they can benefit from utilizing our parallel implementation.
+An O(n^2logn) algorithm is obvious - just find each substring and sort the array. The O(nlogn) algorithm is more subtle and involves a variation of radix sort. 
 
-According to the actual real-world problem, we will choose whether to implement on both GPU and multi-core CPU, or only implement on one of them. For example, if the algorithm would be run on all the operation systems, including embedded system, it's more meaningful to optimize a version using SIMD (if applicable) rather than parallel on GPU. We will have discussion for the decision.
-
-If the project goes pretty well, we also plan to apply two of them on some applications, implement the code, and visualize by using OpenGL.
-
-We hope to see the tradeoff between code quality and speedup so the startup companies and the communities would be able to develop their own library with high parallelism performance, without need to find existing library with a lot of restricts.
 
 ### Challenge
 
 The challenge lies in the fact that even the sequential implementation of suffix array construction is very complicated and difficult to do in O(n). The reason for this is that there are O(n) suffixes for a string leading to O(n^2) total space for all the suffixes. However, this does not mean the lower bound for this problem is O(n^2). Because the suffixes share information, we can cleverly create the suffix array in O(nlogn) and even O(n).  
 
-Some of the specific algorithms we plan to implement are the following - 
+### Resources
 
-Randomized Minimum Spanning Tree (MST) in Expected O(n) - http://www.cs.cmu.edu/~guyb/paralg/papers/KargerKleinTarjan95.pdf
+We plan to start from scratch. Here are the papers we will be referencing:
 
-Randomized Incremental Convex Hull - http://www.cs.cmu.edu/~guyb/paralg/papers/BlellochGuShunSun20.pdf
+https://cp-algorithms.com/string/suffix-array.html (description of O(nlogn) algorithm
+http://www.cs.cmu.edu/~guyb/paralg/papers/KarkkainenSanders03.pdf (original paper on skew algorithm)
+http://algo2.iti.kit.edu/sanders/papers/KulSan06a.pdf (parallel version of skew algorithm)
+https://arxiv.org/pdf/1610.08305.pdf (a very recent algorithm for O(n) construction with constant space)
 
-Parallel Cartesian Tree Construction - http://www.cs.cmu.edu/~guyb/paralg/papers/ShunBlelloch14.pdf
-
-Parallel Strongly Connected Components (SCC) - http://www.cs.cmu.edu/~guyb/paralg/papers/CoppersmithFHP.pdf
-
-Suffix Array Construction in O(n) - http://www.cs.cmu.edu/~guyb/paralg/papers/KarkkainenSanders03.pdf
-
-We aim to finish at least 3 algorithms. Many of these algorithms have not been implemented before so this is an interesting problem. This project will highlight the profound relationship between randomized algorithms and work efficient parallel algorithms and the place that randomness and divide and conquer occupies within the realm of designing parallel algorithms. 
+We will be programming on the CPU on the GHC machines. 
 
