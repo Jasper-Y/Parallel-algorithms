@@ -1,15 +1,26 @@
-# Parallel algorithms and applications
+# Parallel Suffix Array Construction and Applications
 Members: Chengji Yu (chengji2), Sree Revoori (srevoori)
 
 
 
 ### Summary
 
-We are going to implement several parallel algorithms including sorting, traversing, and searching, and analyze two applications of them on web service and robot applications. According to specific real-world problem, we will implement on either both GPU and multi-core modern CPU, or one of them.
-
+We are going to implement the skew algorithm for work-optimal parallel suffix array construction on the CPU. Time permitting, we will implement applications of suffix arrays such as the Burrows-Wheeler transform.
 
 
 ### Background
+
+A suffix array is a data structure that contains the sorted suffixes of a string. In contrast to suffix trees, they are extremely space efficient since we can compress each suffix to an integer, i.e. let the index the suffix starts on denote the suffix. As an example, say we want to construct a suffix tree for the string s = banana$. We first index each suffix based on the index it starts at.
+
+| Suffix        | i           | 
+| ------------- |:-----------:|
+| banana$       | 0           |
+| anana$        | 1           |   
+| nana$         | 2           | 
+| ana$          | 3           | 
+| na$           | 4           | 
+| a$            | 5           | 
+| $             | 6           | 
 
 With more powerful computing machine and network, the latency of the web services has more attention from the users and some real-time application can be fulfilled such as robotic applications. Some of the algorithms in the heterogeneous database platforms have the library running in parallel but some not. Some companies in the industry also don't have enough humen resources to optimize their own library in parallel. 
 
@@ -20,6 +31,10 @@ According to the actual real-world problem, we will choose whether to implement 
 If the project goes pretty well, we also plan to apply two of them on some applications, implement the code, and visualize by using OpenGL.
 
 We hope to see the tradeoff between code quality and speedup so the startup companies and the communities would be able to develop their own library with high parallelism performance, without need to find existing library with a lot of restricts.
+
+### Challenge
+
+The challenge lies in the fact that even the sequential implementation of suffix array construction is very complicated and difficult to do in O(n). The reason for this is that there are O(n) suffixes for a string leading to O(n^2) total space for all the suffixes. However, this does not mean the lower bound for this problem is O(n^2). Because the suffixes share information, we can cleverly create the suffix array in O(nlogn) and even O(n).  
 
 Some of the specific algorithms we plan to implement are the following - 
 
