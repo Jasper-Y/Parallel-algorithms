@@ -1,3 +1,129 @@
+(* -------------------------- *)
+(* UTIL CODE *)
+
+infixr 0 $
+fun f $ a = f a
+
+signature RANGE = 
+  sig
+    type range
+    
+    exception EmptyRange
+    exception Loop
+    exception EmptyStep
+    
+    exception NestedRange
+    
+    val to : int * int -> range
+    val until : int * int -> range 
+    
+    val by : range * int -> range
+    
+    val for : range -> (int -> 'a) -> 'a
+    
+    val iterate : (int * 'a -> 'a) -> 'a -> range -> 'a
+  end
+
+structure Range :> RANGE = 
+  struct
+    datatype range =   
+      inc of int * int 
+    | exc of int * int 
+    | stepUp of range * int 
+    | stepDown of range * int
+    
+    exception EmptyRange
+    exception Loop
+    exception EmptyStep
+    
+    exception NestedRange
+    
+    infix to
+    infix until
+    infix by
+    
+    fun x to y = inc(x, y)
+    
+    fun x until y = if x = y then raise EmptyRange else exc(x, y)
+    
+    fun r by x = 
+      case r of
+        stepUp(_) => raise NestedRange
+      | stepDown(_) => raise NestedRange
+      | _ => 
+          if x = 0 then raise EmptyStep 
+          else if x < 0 then stepDown(r, x)
+          else stepUp(r, x)
+            
+    
+    fun for r f = 
+      case r of
+        inc(x, y) => 
+          if x = y then f x 
+          else if x > y then raise Loop
+          else (f x; for (inc(x + 1, y)) f)
+      | exc(x, y) => 
+          if x + 1 = y then f x 
+          else if x >= y then raise Loop
+          else (f x; for (exc(x + 1, y)) f)
+      | stepUp(inc(x, y), i) => 
+          if x > y then raise Loop
+          else if x = y orelse x + i > y then f x
+          else (f x; for (stepUp(inc(x + i, y), i)) f) 
+      | stepDown(inc(x, y), i) =>
+          if x < y then raise Loop
+          else if x = y orelse x + i < y then f x 
+          else (f x; for (stepDown(inc(x + i, y), i)) f)
+      | stepUp(exc(x, y), i) => 
+          if x >= y then raise Loop
+          else if x + i >= y then f x 
+          else (f x; for (stepUp(exc(x + i, y), i)) f)
+      | stepDown(exc(x, y), i) =>
+          if x <= y then raise Loop
+          else if x + i <= y then f x 
+          else (f x; for (stepDown(exc(x + i, y), i)) f)
+      | _ => raise NestedRange
+      
+    fun iterate f b r = 
+     case r of
+        inc(x, y) => 
+          if x = y then f (x, b) 
+          else if x > y then raise Loop
+          else iterate f (f (x, b)) (inc(x + 1, y)) 
+      | exc(x, y) => 
+          if x + 1 = y then f (x, b)
+          else if x >= y then raise Loop
+          else iterate f (f (x, b)) (exc(x + 1, y)) 
+      | stepUp(inc(x, y), i) => 
+          if x > y then raise Loop
+          else if x = y orelse x + i > y then f (x, b)
+          else iterate f (f(x, b)) (stepUp(inc(x + i, y), i)) 
+      | stepDown(inc(x, y), i) =>
+          if x < y then raise Loop
+          else if x = y orelse x + i < y then f (x, b)
+          else iterate f (f(x, b)) (stepDown(inc(x + i, y), i))
+      | stepUp(exc(x, y), i) => 
+          if x >= y then raise Loop
+          else if x + i >= y then f (x, b)
+          else iterate f (f(x, b)) (stepUp(exc(x + i, y), i))
+      | stepDown(exc(x, y), i) =>
+          if x <= y then raise Loop
+          else if x + i <= y then f (x, b)
+          else iterate f (f(x, b)) (stepDown(exc(x + i, y), i))
+      | _ => raise NestedRange
+  end
+  
+open Range
+
+infix to
+infix until
+infix by
+
+(* UTIL CODE END *)
+(*-----------------------------*)
+
+
+
 (* O(n^2logn) *)
 fun suffixArrayHorrible s = 
   let
