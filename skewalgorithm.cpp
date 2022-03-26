@@ -23,7 +23,6 @@ for (int i = 0, sum = 0; i <= K; i++){
     sum += t; 
 }
 for (int i = 0; i < n; i++) b[c[r[a[i]]]++] = a[i]; 
-delete [] c;
 }
 
 void suffixArray(int* s, int* SA, int n, int K) {
@@ -80,15 +79,4 @@ void suffixArray(int* s, int* SA, int n, int K) {
                 for (k++; t < n02; t++, k++) SA[k] = GetI();
         }
     }
-    delete [] s12; 
-    delete [] SA12; 
-    delete [] SA0; 
-    delete [] s0;
-}
-
-int main()
-{
-   cout << "Hello World" << endl; 
-   
-   return 0;
 }
