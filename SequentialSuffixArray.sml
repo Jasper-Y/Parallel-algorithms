@@ -201,7 +201,6 @@ structure StringKey : ORD_KEY =
 structure RB = RedBlackMapFn(StringKey)
 fun manberMyers s = 
   let
-    val n = String.size s
     fun sortBucket bucket order res = 
       let
         fun ins(d, s, i) = case RB.find (d, s) of 
@@ -213,5 +212,5 @@ fun manberMyers s =
         foldl (fn ((k, v), r) => if List.length v > 1 then sortBucket v (order * 2) r else List.hd v::r) res l
       end
   in
-    List.rev (sortBucket (List.tabulate(n, fn i => i)) 1 [])
+    List.rev (sortBucket (List.tabulate(String.size s, fn i => i)) 1 [])
   end
