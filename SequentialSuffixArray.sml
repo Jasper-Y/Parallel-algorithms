@@ -207,9 +207,8 @@ fun manberMyers s =
             NONE => RB.insert (d, s, [i])
           | SOME x => RB.insert(d, s, i::x)
         val d = foldl (fn (i, h) => ins (h, String.substring(s, i, order) handle _ => String.extract(s, i, NONE) , i)) RB.empty bucket  
-        val l = RB.listItemsi d
       in
-        foldl (fn ((k, v), r) => if List.length v > 1 then sortBucket v (order * 2) r else List.hd v::r) res l
+        foldl (fn ([x], r) => x::r | (v, r) => sortBucket v (order * 2) r) res (RB.listItems d)
       end
   in
     List.rev (sortBucket (List.tabulate(String.size s, fn i => i)) 1 [])
