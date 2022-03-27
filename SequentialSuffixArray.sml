@@ -193,20 +193,26 @@ fun suffixArrayOkay s =
   end
   
   (* O(nlogn) *)
-  fun manberMyersSuffixArray s = 
-    let
-      val n = String.size s
-      fun sortBucket bucket order res = 
-        let
-          val d : (string, int list) HashTable.hash_table= HashTable.mkTable (HashString.hashString, op=) (n*n, Match)
-          fun ins(st, i) = case HashTable.find d st of 
-            NONE => HashTable.insert d (st, [i])
-          | SOME x => HashTable.insert d (st, i::x)
-          val _ = map (fn i => ins(String.substring(s, i, order) handle _ => String.extract(s, i, NONE) , i)) bucket  
-          val l = ListMergeSort.sort (fn ((x, _), (y, _)) => x > y) (HashTable.listItemsi d)
-        in
-          foldl (fn ((k, v), r) => if List.length v > 1 then sortBucket v (order * 2) r else List.hd v:: r) res l
-        end
-    in
-      List.rev (sortBucket (List.tabulate(n, fn i => i)) 1 [])
-    end
+structure StringKey : ORD_KEY = 
+  struct
+    type ord_key = string
+    val compare = String.compare
+  end
+structure RB = RedBlackMapFn(StringKey)
+open RB
+fun manberMyers s = 
+  let
+    val n = String.size s
+    fun sortBucket bucket order res = 
+      let
+        fun ins(d, s, i) = case RB.find (d, s) of 
+            NONE => RB.insert (d, s, [i])
+          | SOME x => RB.insert(d, s, i::x)
+        val d = List.foldl (fn (i, h) => ins (h, String.substring(s, i, order) handle _ => String.extract(s, i, NONE) , i)) RB.empty bucket  
+        val l = RB.listItemsi d
+      in
+        List.foldl (fn ((k, v), r) => if List.length v > 1 then sortBucket v (order * 2) r else List.hd v::r) res l
+      end
+  in
+    List.rev (sortBucket (List.tabulate(n, fn i => i)) 1 [])
+  end
