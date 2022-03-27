@@ -199,7 +199,6 @@ structure StringKey : ORD_KEY =
     val compare = String.compare
   end
 structure RB = RedBlackMapFn(StringKey)
-open RB
 fun manberMyers s = 
   let
     val n = String.size s
@@ -208,10 +207,10 @@ fun manberMyers s =
         fun ins(d, s, i) = case RB.find (d, s) of 
             NONE => RB.insert (d, s, [i])
           | SOME x => RB.insert(d, s, i::x)
-        val d = List.foldl (fn (i, h) => ins (h, String.substring(s, i, order) handle _ => String.extract(s, i, NONE) , i)) RB.empty bucket  
+        val d = foldl (fn (i, h) => ins (h, String.substring(s, i, order) handle _ => String.extract(s, i, NONE) , i)) RB.empty bucket  
         val l = RB.listItemsi d
       in
-        List.foldl (fn ((k, v), r) => if List.length v > 1 then sortBucket v (order * 2) r else List.hd v::r) res l
+        foldl (fn ((k, v), r) => if List.length v > 1 then sortBucket v (order * 2) r else List.hd v::r) res l
       end
   in
     List.rev (sortBucket (List.tabulate(n, fn i => i)) 1 [])
