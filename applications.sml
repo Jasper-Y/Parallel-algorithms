@@ -18,3 +18,11 @@ fun constructlcp s =
   in
     loop 0 0
   end
+
+
+fun burrowsWheeler s = 
+  let
+    val A = Vector.fromList (suffixArray (s ^ "$"))
+  in
+    String.implode (List.tabulate(String.size s + 1, fn i => if Vector.sub(A, i) > 0 then String.sub(s, Vector.sub(A, i) - 1) else #"$"))
+  end
