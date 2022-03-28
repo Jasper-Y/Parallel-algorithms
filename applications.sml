@@ -26,3 +26,11 @@ fun burrowsWheeler s =
   in
     String.implode (List.tabulate(String.size s + 1, fn i => if Vector.sub(A, i) > 0 then String.sub(s, Vector.sub(A, i) - 1) else #"$"))
   end
+
+fun uniqueSubstrings s = 
+  let
+    val lcp = lcpArray s
+    val n = String.size s
+  in
+    n * (n + 1) div 2 - Array.foldl op+ 0 lcp
+  end
