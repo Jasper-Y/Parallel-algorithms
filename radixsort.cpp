@@ -12,6 +12,13 @@ using namespace std::chrono;
 typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::duration<double> dsec;
 
+void print_array(const std::vector<int> &arr) {
+    for (auto x: arr) {
+        printf("%d ", x);
+    }
+    printf("\n");
+}
+
 void counting_sort(int n, int bucket_size, std::vector<int> &cnt,
                    std::vector<int> &res, const std::vector<int> &label,
                    const std::vector<int> &second_order) {
@@ -44,8 +51,8 @@ std::vector<int> sa_radixsort(const std::string &str, int n) {
     int bucket_size = std::max(n, 255);
     std::vector<int> cnt(bucket_size);
     // Same substring have the same lebel value
-    std::vector<int> label(bucket_size);
-    std::vector<int> reorder_label(bucket_size);
+    std::vector<int> label(n);
+    std::vector<int> reorder_label(n);
     // Distince values. The value for order[i] means the
     // substring(order[i]:) is the ith suffix currently. During the
     // iteration, same substrings are ordered by occurrence.
@@ -60,7 +67,6 @@ std::vector<int> sa_radixsort(const std::string &str, int n) {
     int len = 1;
     int p = 1;
     for (; p < n; len <<= 1) {
-        bucket_size = p;
         p = 0;
 
         for (int i = n - len; i < n; i++) {
@@ -78,7 +84,7 @@ std::vector<int> sa_radixsort(const std::string &str, int n) {
 
         p = 1;
         // reorder_label is no longer useful, copy label into it to save memory
-        memcpy(&reorder_label[0], &label[0], bucket_size * sizeof(int));
+        memcpy(&reorder_label[0], &label[0], n * sizeof(int));
         label[order[0]] = 0;
         for (int i = 1; i < n; i++) {
             if (reorder_label[order[i - 1]] == reorder_label[order[i]] &&
@@ -89,6 +95,7 @@ std::vector<int> sa_radixsort(const std::string &str, int n) {
                 label[order[i]] = p++;
             }
         }
+        bucket_size = p;
     }
     return order;
 }
