@@ -1,23 +1,4 @@
-#include <algorithm>
-#include <chrono>
-#include <cstring>
-#include <iostream>
-#include <numeric>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include <vector>
-
-using namespace std::chrono;
-typedef std::chrono::high_resolution_clock Clock;
-typedef std::chrono::duration<double> dsec;
-
-void print_array(const std::vector<int> &arr) {
-    for (auto x: arr) {
-        printf("%d ", x);
-    }
-    printf("\n");
-}
+#include "radixsort.h"
 
 void counting_sort(int n, int bucket_size, std::vector<int> &cnt,
                    std::vector<int> &res, const std::vector<int> &label,
@@ -32,19 +13,6 @@ void counting_sort(int n, int bucket_size, std::vector<int> &cnt,
     for (int i = n - 1; i >= 0; i--) {
         res[--cnt[label[i]]] = second_order[i];
     }
-}
-
-std::vector<int> sa_serial(const std::string &str, int n) {
-    std::vector<std::pair<std::string, int>> pairs;
-    for (int i = 0; i < n; i++) {
-        pairs.push_back({str.substr(i, n - i), i});
-    }
-    std::sort(pairs.begin(), pairs.end());
-    std::vector<int> res;
-    for (auto it : pairs) {
-        res.push_back(it.second);
-    }
-    return res;
 }
 
 std::vector<int> sa_radixsort(const std::string &str, int n) {
@@ -98,22 +66,4 @@ std::vector<int> sa_radixsort(const std::string &str, int n) {
         bucket_size = p;
     }
     return order;
-}
-
-int main(int argc, char *argv[]) {
-    std::string str = "mississipi";
-    int n = str.length();
-
-    std::vector<int> serial_output = sa_serial(str, n);
-    for (auto i : serial_output) {
-        std::cout << i << ": " << str.substr(i, n - i) << std::endl;
-    }
-
-    std::vector<int> radixsort_output = sa_radixsort(str, n);
-    if (memcmp(&serial_output[0], &radixsort_output[0], n * sizeof(int)) != 0) {
-        std::cout << "Wrong output for radixsort suffix array!" << std::endl;
-        for (auto i : radixsort_output) {
-            std::cout << i << ": " << str.substr(i, n - i) << std::endl;
-        }
-    }
 }

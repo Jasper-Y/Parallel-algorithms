@@ -1,6 +1,7 @@
-APP_NAME=radixsort
+APP_NAME=suffixarray
 
-OBJS=radixsort.o
+OBJS += radixsort.o
+OBJS += main.o
 
 CXX = g++ -m64 -std=c++11
 CXXFLAGS = -I. -O3 -Wall
