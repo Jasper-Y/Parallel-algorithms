@@ -1,4 +1,5 @@
 #include "radixsort.h"
+#include "myersort.h"
 #include <algorithm>
 #include <chrono>
 #include <cstring>
@@ -35,13 +36,15 @@ std::vector<int> sa_serial(const std::string &str, int n) {
 
 int main(int argc, char *argv[]) {
     int num_run = 100;
+    int str_copy = 10;
     std::string str = "mississipi";
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < str_copy; i++) {
         str += str;
     }
         int n = str.length();
     double serial_time = 0;
     double radix_time = 0;
+    double myers_time = 0;
     auto start_time = Clock::now();
 
     // Serial
@@ -69,7 +72,22 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // Serial Myers
+    std::vector<int> myersort_output;
+    start_time = Clock::now();
+    for (int i = 0; i < num_run; i++) {
+        myersort_output = sa_myersort(str, n);
+    }
+    myers_time += duration_cast<dsec>(Clock::now() - start_time).count();
+    if (memcmp(&serial_output[0], &myersort_output[0], n * sizeof(int)) != 0) {
+        std::cout << "Wrong output for myers algorithm!" << std::endl;
+        for (auto i : myersort_output) {
+            std::cout << i << ": " << str.substr(i, n - i) << std::endl;
+        }
+    }
+
     printf("O(n^2logn) serial:\n%f\n", serial_time / num_run);
     printf("O(nlogn) serial radix:\n%f\n", radix_time / num_run);
+    printf("O(nlogn) myers algorithm:\n%f\n", myers_time / num_run);
     return 0;
 }
