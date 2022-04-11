@@ -48,7 +48,8 @@ void usage(const char *progname) {
     printf("Usage: %s [options]\n", progname);
     printf("Program Options:\n");
     printf("  -t  --threads <N>       Use N threads\n");
-    printf("  -o  input file          Specify input string file\n");
+    printf("  -s  input string        Specify input string. No longer than "
+           "256. \n");
     printf("  -r  --repeat <INT>      Specify double the string how many "
            "times. Actually length would be len(input) * 2 ^ r.\n");
     printf("  -?  --help              This message\n");
@@ -59,20 +60,19 @@ int main(int argc, char *argv[]) {
     int num_run = 100;
     int str_copy = 0;
     int num_threads = 1;
-    std::string str_file = "";
     // std::string str = "mississipi";
     // std::string str = "abcdefghijklmnopqrstuvwxyz";
     std::string str = "";
-    for (int i = 0; i < 50000; i++) {
+    for (int i = 0; i < 100000; i++) {
         str += (int)(rand() / (RAND_MAX + 1.0) * 26) + 'a';
     }
 
     // parse commandline options
     int opt;
     static struct option long_options[] = {{"threads", 1, 0, 't'},
-                                           {"file", 1, 0, 'f'},
+                                           {"input_string", 1, 0, 's'},
                                            {"repeat_string", 1, 0, 'r'}};
-    while ((opt = getopt_long(argc, argv, "t:f:r:?", long_options, NULL)) !=
+    while ((opt = getopt_long(argc, argv, "t:s:r:?", long_options, NULL)) !=
            EOF) {
         switch (opt) {
         case 't': {
@@ -80,10 +80,10 @@ int main(int argc, char *argv[]) {
             num_threads = num_threads > 0 ? num_threads : 1;
             break;
         }
-        case 'f': {
-            char fname[256];
-            strcpy(fname, optarg);
-            str_file = std::string(fname);
+        case 's': {
+            char input_string[256];
+            strcpy(input_string, optarg);
+            str = std::string(input_string);
             break;
         }
         case 'r': {
@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
     myers_time += duration_cast<dsec>(Clock::now() - start_time).count();
     check_result(serial_output, myersort_output, n, "myers algorithm");
     printf("O(nlogn) myers algorithm:\n%f\n", myers_time / num_run);
-    
+
     // Serial skew
     std::vector<int> skew_output;
     start_time = Clock::now();
