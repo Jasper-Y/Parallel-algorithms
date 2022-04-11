@@ -1,5 +1,6 @@
 #include "myersort.h"
 #include "radixsort.h"
+#include "skewalgorithm.h"
 #include <algorithm>
 #include <chrono>
 #include <cstring>
@@ -54,12 +55,17 @@ void usage(const char *progname) {
 }
 
 int main(int argc, char *argv[]) {
+    srand(time(NULL));
     int num_run = 100;
     int str_copy = 0;
     int num_threads = 1;
     std::string str_file = "";
     // std::string str = "mississipi";
-    std::string str = "abcdefghijklmnopqrstuvwxyz";
+    // std::string str = "abcdefghijklmnopqrstuvwxyz";
+    std::string str = "";
+    for (int i = 0; i < 50000; i++) {
+        str += (int)(rand() / (RAND_MAX + 1.0) * 26) + 'a';
+    }
 
     // parse commandline options
     int opt;
@@ -99,6 +105,7 @@ int main(int argc, char *argv[]) {
     double serial_time = 0;
     double radix_time = 0;
     double myers_time = 0;
+    double skew_time = 0;
     auto start_time = Clock::now();
 
     // Serial
@@ -132,6 +139,16 @@ int main(int argc, char *argv[]) {
     myers_time += duration_cast<dsec>(Clock::now() - start_time).count();
     check_result(serial_output, myersort_output, n, "myers algorithm");
     printf("O(nlogn) myers algorithm:\n%f\n", myers_time / num_run);
+    
+    // Serial Myers
+    std::vector<int> skew_output;
+    start_time = Clock::now();
+    for (int i = 0; i < num_run; i++) {
+        skew_output = sa_skew(str, n);
+    }
+    skew_time += duration_cast<dsec>(Clock::now() - start_time).count();
+    check_result(serial_output, skew_output, n, "myers algorithm");
+    printf("O(n) skew algorithm:\n%f\n", skew_time / num_run);
 
     return 0;
 }

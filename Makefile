@@ -2,6 +2,7 @@ APP_NAME=suffixarray
 
 OBJS += radixsort.o
 OBJS += myersort.o
+OBJS += skewalgorithm.o
 OBJS += main.o
 
 CXX = g++ -m64 -std=c++11
