@@ -3,9 +3,11 @@ Members: Chengji Yu (chengji2), Sree Revoori (srevoori)
 
 
 
+## PROPOSAL
+
 ### Summary
 
-We are going to implement a parallel version of the skew algorithm for work-efficient parallel suffix array construction on the CPU. Time permitting, we will implement applications of suffix arrays such as the Burrows-Wheeler transform.
+We are going to implement a parallel version of algorithm(s) for work-efficient parallel suffix array construction on the CPU. Time permitting, we will implement applications of suffix arrays such as the Burrows-Wheeler transform.
 
 
 ### Background
@@ -49,7 +51,7 @@ The challenge lies in the fact that even the sequential implementation of suffix
 
 By the recurrence, we know there are O(log n) levels of recursion. This is one of the bottlenecks for this problem. Here, it is difficult to attain polylogarithmic span since we need a recurrence that looks like T(n) = T(2n/3) + o(n). To turn O(n) into o(n), we first use a parallel sorting algorithm that runs in O(log^2 n) span. 
 
-Though the O(n) algorithm is optimal in sequential implementation, the fraction of sequential execution might prevent it from outperforming than parallel O(nlogn) algorithm. We are aiming at parallelizing on algorithms with different sequential time complexity to find the optimal parallel suffix array implementation.
+Though the O(n) algorithm is optimal in sequential implementation, the fraction of sequential execution might prevent it from outperforming than parallel O(nlogn) algorithm. We are aiming at parallelizing on algorithms with different sequential time complexity to find the optimal parallel suffix array implementation. The ultimate goal is not limited to parallelizing O(n) algorithms, but is to find the most efficient solution given a specific number of threads/processors. The key work is to find the potential parallelism behind the algorithm.
 
 ### Resources
 
@@ -67,11 +69,11 @@ We will be programming on the CPU on the GHC machines.
 
 ### Goals and Deliverables
 
-75% goal: Implement the parallel skew algorithm.
+75% goal: Implement at least one parallel algorithm.
 
-100% goal: Implement the parallel skew algorithm and analyze performance characteristics. Optimize it so there is significant speedup and outperforms all sequential algorithms. 
+100% goal: Implement the parallel algorithm(s) and analyze performance characteristics. Optimize it so there is significant speedup and outperforms all sequential algorithms. 
 
-125% goal: Implement the parallel skew algorithm and analyze performance characteristics. Implement various applications such as the Burrows-Wheeler transform, suffix array to suffix tree conversion, and LCP array construction. 
+125% goal: Implement the parallel algorithm(s) and analyze performance characteristics. Implement various applications such as the Burrows-Wheeler transform, suffix array to suffix tree conversion, and LCP array construction. 
 
 At the final presentations, we will be showing graphs of the speedup based on different parameters (length of string, number of processors, gpu/cpu). We will compare this speedup to the sequential O(n^2 log n), O(nlogn), and O(n) algorithms. 
 
@@ -85,11 +87,50 @@ Week of 3/21: Implement the O(n^2logn) brute force and the O(nlogn) sequential a
 
 Week of 3/28: Complete the sequential skew algorithm and the (optional) algorithm described here - https://arxiv.org/pdf/1610.08305.pdf
 
-Week of 4/4: Begin work on the parallel skew algorithm. 
+Week of 4/4: Begin work on the parallel algorithm. 
 
-Week of 4/11: Complete the parallel skew algorithm.
+Week of 4/11: Complete the parallel algorithm.
 
-Week of 4/18: Make optimizations to parallel skew algorithm and conduct analysis and comparison of all the algorithms
+Week of 4/18: Make optimizations to parallel algorithm and conduct analysis and comparison of all the algorithms
 
 Week of 4/25: Assuming we have met all our goals thus far, start working on applications. Otherwise, continue work from previous weeks to meet 100% goal.
+
+
+
+## MILESTONE
+
+### Summary
+
+Suffix array construction has a considerable flexibility so that the algorithms vary a lot. Therefore the first step we did was to search different algorithms and understood the logic. Considering the time/space efficiency, productivity, conciseness, and potential attribute for parallelism, we implemented the sequential version of O(n<sup>2</sup>logn) brute force method, O(nlogn) Myers algorithm, O(nlogn) algorithm using radix sort, and O(n) skew algorithm. We set up the benchmark for the sequential performance. The test case was set as a random string with length 100,000.
+
+| Algorithm              | O(n<sup>2</sup>logn) brute force | O(nlogn) Myers algorithm | O(nlogn) radix sorting | O(n) skew algorithm |
+| ---------------------- | -------------------------------- | ------------------------ | ---------------------- | ------------------- |
+| Sequential runtime (s) | 0.439395                         | 0.032200                 | 0.002397               | 0.004665            |
+
+Finally before the milestone, we implemented the parallel version for the Myers algorithm and the speedups are as below.
+
+| Number of threads | 2    | 4    | 8    |
+| ----------------- | ---- | ---- | ---- |
+| Speedup           | 1.33 | 2.06 | 3.23 |
+
+### Updated goals
+
+The general goals remain the same. We have done the algorithm search and obtained some preliminary results shown above. 
+
+**At lease achieve:** We plan to keep optimizing the existing code to improve the sub-linear speedup. Some implementation details might have a negative impact on the benchmark result so we will also work on the code optimization from the point of system domain knowledge. 
+
+**Plan to achieve:** We will also look for the intrinsicness of those algorithms we chose and test more parallel programming techniques with detailed analysis.
+
+**Hope to achieve:** Ideally with some satisfying results, we will move on to the applications.
+
+### Plan for poster session
+
+**Plan to achieve:** We plan to show a graph(s) with performance analysis at the poster session. 
+
+**Hope to achieve:** We hope to show a demo to demonstrate the significant advantage of using our parallelized algorithm.
+
+### Issues
+
+* Note that according to the benchmark, the Myers algorithm performs worse than the radix sorting though they have the same time complexity. This is probably related to implementation details. We have already adopted RB-tree for acceleration. This introduces some more work we have to deal with. One hypothesis is the iterative Myers algorithm requires a large queue to store the tasks, while the recursive Myers algorithm might have a really deep recursion stack. Therefore, the theoretical arithmatic time complexity is the same as radix sorting but actual behavior related to storage is worse.
+* The skew algorithm we use is complex and did not perform well than the radix sorting. The implementation of skew algorithm is tricky so we do not plan to parallel the skew algorithm but will mainly focus on the radix sorting algorithm. We hope to use this comparison to prove our hypothesis that the solution with the optimal time complexity isn't always the best choice in parallel applications.
 
