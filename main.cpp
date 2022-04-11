@@ -140,14 +140,14 @@ int main(int argc, char *argv[]) {
     check_result(serial_output, myersort_output, n, "myers algorithm");
     printf("O(nlogn) myers algorithm:\n%f\n", myers_time / num_run);
     
-    // Serial Myers
+    // Serial skew
     std::vector<int> skew_output;
     start_time = Clock::now();
     for (int i = 0; i < num_run; i++) {
         skew_output = sa_skew(str, n);
     }
     skew_time += duration_cast<dsec>(Clock::now() - start_time).count();
-    check_result(serial_output, skew_output, n, "myers algorithm");
+    check_result(serial_output, skew_output, n, "skew algorithm");
     printf("O(n) skew algorithm:\n%f\n", skew_time / num_run);
 
     return 0;
