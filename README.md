@@ -83,17 +83,21 @@ We will be doing this in C++ on the CPU.
 
 ### Schedule
 
-Week of 3/21: Implement the O(n^2logn) brute force and the O(nlogn) sequential algorithms
+3/21 - 3/27: Implement the O(n^2logn) brute force and the O(nlogn) sequential algorithms
 
-Week of 3/28: Complete the sequential skew algorithm and the (optional) algorithm described here - https://arxiv.org/pdf/1610.08305.pdf
+3/28 - 4/3: Complete the sequential skew algorithm and the (optional) algorithm described here - https://arxiv.org/pdf/1610.08305.pdf
 
-Week of 4/4: Begin work on the parallel algorithm. 
+4/4 - 4/11: Complete the Myers algorithm and radix sorting method. Begin work on the parallel algorithm. 
 
-Week of 4/11: Complete the parallel algorithm.
+4/11 - 4/14: Optimize parallel Myers algorithm to approach linear speedup (Chengji). Analyze the Myers algorithm about its sequential performance (Sree).
 
-Week of 4/18: Make optimizations to parallel algorithm and conduct analysis and comparison of all the algorithms
+4/15 - 4/18: Apply and test more parallel programming techniques on the algorithms we have implemented (Chengji and Sree).
 
-Week of 4/25: Assuming we have met all our goals thus far, start working on applications. Otherwise, continue work from previous weeks to meet 100% goal.
+4/19 - 4/22: Make optimizations to the parallel algorithm(s) and provide final version code with evaluation code (Chengji). Conduct analysis and comparison of all the algorithms (Sree).
+
+4/23 - 4/26: Assuming we have met all our goals thus far, start working on applications. Otherwise, continue work from previous weeks to meet 100% goal. (Chengji and Sree)
+
+4/27 - 4/29: Finish report (Chengji and Sree)
 
 
 
