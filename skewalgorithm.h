@@ -4,6 +4,6 @@
 #include <string>
 #include <vector>
 
-std::vector<int> sa_skew(const std::string &str, int n);
+void sa_skew(const std::string &str, int n, std::vector<int> &output);
 
 #endif // _SKEW_H

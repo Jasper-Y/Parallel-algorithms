@@ -11,6 +11,13 @@
 #include <stdlib.h>
 #include <vector>
 
+struct comp {
+    bool operator()(const std::pair<const char *, int> &lhs,
+                    const std::pair<const char *, int> &rhs) {
+        return memcmp(lhs.first, rhs.first, lhs.second * sizeof(char)) < 0;
+    }
+};
+
 void sort_subset_recurse(const std::string &str, const std::vector<int> &target,
                          std::vector<int> &result, int start_pos, int len) {
     std::map<std::string, std::vector<int>> groups;
@@ -48,15 +55,17 @@ void sort_subset_iterate(const std::string &str, const std::vector<int> &target,
             std::pair<int, std::vector<int>> new_task = task_queue.front();
             task_queue.pop();
 
-            std::map<std::string, std::vector<int>> groups;
+            std::map<std::pair<const char *, int>, std::vector<int>, comp>
+                groups;
             for (auto x : new_task.second) {
-                std::string s = str.substr(x + len, len);
-                auto iter = groups.find(s);
+                std::pair<const char *, int> p = std::make_pair(&str[x + len], len);
+                auto iter = groups.find(p);
                 if (iter != groups.end()) {
                     iter->second.push_back(x);
                 } else {
-                    groups.insert(std::pair<std::string, std::vector<int>>(
-                        s, std::vector<int>(1, x)));
+                    groups.insert(
+                        std::pair<std::pair<const char *, int>,
+                                  std::vector<int>>(p, std::vector<int>(1, x)));
                 }
             }
             int num = 0;
@@ -74,10 +83,10 @@ void sort_subset_iterate(const std::string &str, const std::vector<int> &target,
     }
 }
 
-std::vector<int> sa_myersort(const std::string &str, int n, int num_threads) {
-    // Distince values. The value for order[i] means the
-    // substring(order[i]:) is the ith suffix currently.
-    std::vector<int> order(n);
+void sa_myersort(const std::string &str, int n, std::vector<int> &output,
+                 int num_threads) {
+    // Distince values. The value for output[i] means the
+    // substring(output[i]:) is the ith suffix currently.
     omp_set_num_threads(num_threads);
 
     std::map<char, std::vector<int>> groups;
@@ -95,7 +104,7 @@ std::vector<int> sa_myersort(const std::string &str, int n, int num_threads) {
     std::vector<std::pair<int, std::vector<int>>> next_round;
     for (auto iter = groups.begin(); iter != groups.end(); iter++) {
         if (iter->second.size() == 1) {
-            order[num] = iter->second[0];
+            output[num] = iter->second[0];
         } else {
             next_round.push_back(
                 std::pair<int, std::vector<int>>(num, iter->second));
@@ -107,8 +116,7 @@ std::vector<int> sa_myersort(const std::string &str, int n, int num_threads) {
     int num_task = next_round.size();
 #pragma omp parallel for private(i) schedule(dynamic)
     for (i = 0; i < num_task; i++) {
-        sort_subset_iterate(str, next_round[i].second, order,
+        sort_subset_iterate(str, next_round[i].second, output,
                             next_round[i].first, 1);
     }
-    return order;
 }

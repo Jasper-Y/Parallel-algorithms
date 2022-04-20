@@ -31,17 +31,20 @@ void check_result(const std::vector<int> &expect,
     }
 }
 
-std::vector<int> sa_serial(const std::string &str, int n) {
-    std::vector<std::pair<std::string, int>> pairs;
+bool cmp_function (std::pair<int, const char*> a, std::pair<int, const char*> b) {
+    return strcmp(a.second + a.first, b.second + b.first) < 0;
+}
+
+void sa_serial(const std::string &str, int n, std::vector<int> &output) {
+    std::vector<std::pair<int, const char*>> pairs(n);
+    // std::vector<std::pair<std::string, int>> pairs;
     for (int i = 0; i < n; i++) {
-        pairs.push_back({str.substr(i, n - i), i});
+        pairs[i] = std::make_pair(i, &str[0]);
     }
-    std::sort(pairs.begin(), pairs.end());
-    std::vector<int> res;
-    for (auto it : pairs) {
-        res.push_back(it.second);
+    std::sort(pairs.begin(), pairs.end(), cmp_function);
+    for (int i = 0; i < n; i++) {
+        output[i] = pairs[i].first;
     }
-    return res;
 }
 
 void usage(const char *progname) {
@@ -106,13 +109,16 @@ int main(int argc, char *argv[]) {
     double radix_time = 0;
     double myers_time = 0;
     double skew_time = 0;
+    std::vector<int> serial_output(n);
+    std::vector<int> radix_output(n);
+    std::vector<int> myers_output(n);
+    std::vector<int> skew_output(n + 3);
     auto start_time = Clock::now();
 
     // Serial
-    std::vector<int> serial_output;
     start_time = Clock::now();
     for (int i = 0; i < num_run; i++) {
-        serial_output = sa_serial(str, n);
+        sa_serial(str, n, serial_output);
     }
     serial_time += duration_cast<dsec>(Clock::now() - start_time).count();
     printf("O(n^2logn) serial:\n%f\n", serial_time / num_run);
@@ -121,30 +127,27 @@ int main(int argc, char *argv[]) {
     // }
 
     // Serial radix
-    std::vector<int> radixsort_output;
     start_time = Clock::now();
     for (int i = 0; i < num_run; i++) {
-        radixsort_output = sa_radixsort(str, n);
+        sa_radixsort(str, n, radix_output);
     }
     radix_time += duration_cast<dsec>(Clock::now() - start_time).count();
     printf("O(nlogn) serial radix:\n%f\n", radix_time / num_run);
-    check_result(serial_output, radixsort_output, n, "radixsort");
+    check_result(serial_output, radix_output, n, "radixsort");
 
     // Serial Myers
-    std::vector<int> myersort_output;
     start_time = Clock::now();
     for (int i = 0; i < num_run; i++) {
-        myersort_output = sa_myersort(str, n, num_threads);
+        sa_myersort(str, n, myers_output, num_threads);
     }
     myers_time += duration_cast<dsec>(Clock::now() - start_time).count();
-    check_result(serial_output, myersort_output, n, "myers algorithm");
+    check_result(serial_output, myers_output, n, "myers algorithm");
     printf("O(nlogn) myers algorithm:\n%f\n", myers_time / num_run);
 
     // Serial skew
-    std::vector<int> skew_output;
     start_time = Clock::now();
     for (int i = 0; i < num_run; i++) {
-        skew_output = sa_skew(str, n);
+        sa_skew(str, n, skew_output);
     }
     skew_time += duration_cast<dsec>(Clock::now() - start_time).count();
     check_result(serial_output, skew_output, n, "skew algorithm");

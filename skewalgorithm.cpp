@@ -106,18 +106,13 @@ void suffixArray(int *s, int *SA, int n, int K) {
     delete[] s0;
 }
 
-std::vector<int> sa_skew(const std::string &str, int n) {
+void sa_skew(const std::string &str, int n, std::vector<int> &output) {
     int *s = new int[n + 3];
     s[n] = s[n + 1] = s[n + 2] = 0;
-    int *order = new int[n + 1];
     for (int i = 0; i < n; i++) {
         s[i] = (int)(str[i] - 'a' + 1);
-        order[i] = i;
     }
-    suffixArray(s, order, n, 27); // a: 1, z: 26, s[n:n+3] = 0
+    suffixArray(s, &output[0], n, 27); // a: 1, z: 26, s[n:n+3] = 0
     std::vector<int> res(n);
-    memcpy(&res[0], order, sizeof(int) * n);
     delete[] s;
-    delete[] order;
-    return res;
 }

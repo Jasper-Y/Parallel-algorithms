@@ -15,6 +15,9 @@ void counting_sort(int n, int bucket_size, std::vector<int> &cnt,
         cnt[label[i]]++;
     }
     for (int i = 1; i < bucket_size; i++) {
+        // In our case, bucket size is usually alphabet size so parallel
+        // exclusive prefix sum may not be effective. But parallel prefix sum is
+        // definitely a great attempt.
         cnt[i] += cnt[i - 1];
     }
     for (int i = n - 1; i >= 0; i--) {
@@ -22,7 +25,7 @@ void counting_sort(int n, int bucket_size, std::vector<int> &cnt,
     }
 }
 
-std::vector<int> sa_radixsort(const std::string &str, int n) {
+void sa_radixsort(const std::string &str, int n, std::vector<int> &order) {
     int bucket_size = std::max(n, 255);
     std::vector<int> cnt(bucket_size);
     // Same substring have the same lebel value
@@ -31,7 +34,6 @@ std::vector<int> sa_radixsort(const std::string &str, int n) {
     // Distince values. The value for order[i] means the
     // substring(order[i]:) is the ith suffix currently. During the
     // iteration, same substrings are ordered by occurrence.
-    std::vector<int> order(n);
     std::vector<int> second_order(n);
     for (int i = 0; i < n; i++) {
         label[i] = (int)str[i];
@@ -72,5 +74,4 @@ std::vector<int> sa_radixsort(const std::string &str, int n) {
         }
         bucket_size = p;
     }
-    return order;
 }

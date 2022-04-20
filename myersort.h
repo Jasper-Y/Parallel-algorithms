@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
-std::vector<int> sa_myersort(const std::string &str, int n, int num_threads);
+void sa_myersort(const std::string &str, int n, std::vector<int> &output,
+                 int num_threads);
 
 #endif // _MYERS_SORT_H

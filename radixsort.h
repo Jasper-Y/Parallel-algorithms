@@ -10,6 +10,6 @@ void counting_sort(int n, int bucket_size, std::vector<int> &cnt,
                    const std::vector<int> &second_order);
 
 // Return sorted suffix array by radix sorting algorithm
-std::vector<int> sa_radixsort(const std::string &str, int n);
+void sa_radixsort(const std::string &str, int n, std::vector<int> &order);
 
 #endif // _RADIX_SORT_H
