@@ -1,5 +1,6 @@
 #include "radixsort.h"
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <cstring>
 #include <iostream>
@@ -7,10 +8,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void counting_sort(int n, int bucket_size, std::vector<int> &cnt,
+void counting_sort(int n, int bucket_size, std::vector<std::atomic<int>> &cnt,
                    std::vector<int> &res, const std::vector<int> &label,
                    const std::vector<int> &second_order) {
-    std::fill(cnt.begin(), cnt.end(), 0);
+    // std::fill(cnt.begin(), cnt.end(), 0);
+    // std::for_each (std::execution::par, cnt.begin(), cnt.end(), [&](std::atomic<int> c)) {
+    //     c.store(0, std::memory_order_relaxed);
+    // }
+    for (int i = 0; i < n; i++) {
+        cnt[i].store(0, std::memory_order_relaxed);
+    }
     for (int i = 0; i < n; i++) {
         cnt[label[i]]++;
     }
@@ -21,13 +28,14 @@ void counting_sort(int n, int bucket_size, std::vector<int> &cnt,
         cnt[i] += cnt[i - 1];
     }
     for (int i = n - 1; i >= 0; i--) {
-        res[--cnt[label[i]]] = second_order[i];
+        --cnt[label[i]];
+        res[cnt[label[i]].load(std::memory_order_relaxed)] = second_order[i];
     }
 }
 
 void sa_radixsort(const std::string &str, int n, std::vector<int> &order) {
     int bucket_size = std::max(n, 255);
-    std::vector<int> cnt(bucket_size);
+    std::vector<std::atomic<int>> cnt(bucket_size);
     // Same substring have the same lebel value
     std::vector<int> label(n);
     std::vector<int> reorder_label(n);

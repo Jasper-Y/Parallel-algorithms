@@ -3,9 +3,10 @@
 
 #include <string>
 #include <vector>
+#include <atomic>
 
 // Counting sort
-void counting_sort(int n, int bucket_size, std::vector<int> &cnt,
+void counting_sort(int n, int bucket_size, std::vector<std::atomic<int>> &cnt,
                    std::vector<int> &res, const std::vector<int> &label,
                    const std::vector<int> &second_order);
 
