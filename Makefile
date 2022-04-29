@@ -6,8 +6,16 @@ OBJS += skewalgorithm.o
 OBJS += main.o
 
 CXX = g++ -m64 -std=c++11
-CXXFLAGS = -O3 -Wall -fopenmp -Wno-unknown-pragmas -DATOMIC_RADIX
-# CXXFLAGS = -O3 -Wall -fopenmp -Wno-unknown-pragmas
+# this is the normal usage
+CXXFLAGS = -O3 -Wall -fopenmp -Wno-unknown-pragmas
+
+# comment out this to test atomic operation in radix sort
+# CXXFLAGS = -O3 -Wall -fopenmp -Wno-unknown-pragmas -DATOMIC_RADIX
+
+# comment out this to test without vectorization 
+# CXXFLAGS = -O3 -Wall -fopenmp -Wno-unknown-pragmas -fno-tree-vectorize
+
+# comment out this to see the log for vectorization result
 # CXXFLAGS = -O3 -Wall -fopenmp -Wno-unknown-pragmas -ftree-vectorizer-verbose=1
 
 default: $(APP_NAME)

@@ -50,34 +50,33 @@ void sa_serial(const std::string &str, int n, std::vector<int> &output) {
 void usage(const char *progname) {
     printf("Usage: %s [options]\n", progname);
     printf("Program Options:\n");
-    printf("  -t  --threads <N>       Use N threads\n");
-    printf("  -s  input string        Specify input string. No longer than "
+    printf("  -t  --threads <N>         Use N threads\n");
+    printf("  -r  --random (default)    Randomly generate a string\n");
+    printf("  -e  --easy                Generate a fairly easy test case that "
+           "adjacent suffixes are different\n");
+    printf("  -h  --hard                Generate the worst case that require "
+           "the algorithms go into the final iteration\n");
+    printf("  -m  --manual <string>     Specify input string. No longer than "
            "256. \n");
-    printf("  -r  --repeat <INT>      Specify double the string how many "
-           "times. Actually length would be len(input) * 2 ^ r.\n");
-    printf("  -?  --help              This message\n");
+    printf("  -?  --help                This message\n");
 }
 
 int main(int argc, char *argv[]) {
     srand(time(NULL));
-    int num_run = 1;
-    int str_copy = 0;
+    // larger value might cause potential error (could be overflow)
+    size_t MAX_LENGTH = 90000;
+    size_t num_run = 5;
     int num_threads = 1;
-    // std::string str = "mississipi";
-    // std::string str = "abcdefghijklmnopqrstuvwxyz";
     std::string str = "";
-    for (int i = 0; i < 50000; i++) {
-        // str += (int)(rand() / (RAND_MAX + 1.0) * 26) + 'a';
-        str += 'a';
-    }
-    str += 'b';
 
     // parse commandline options
     int opt;
     static struct option long_options[] = {{"threads", 1, 0, 't'},
-                                           {"input_string", 1, 0, 's'},
-                                           {"repeat_string", 1, 0, 'r'}};
-    while ((opt = getopt_long(argc, argv, "t:s:r:?", long_options, NULL)) !=
+                                           {"random", 1, 0, 'r'},
+                                           {"easy", 1, 0, 'e'},
+                                           {"hard", 1, 0, 'h'},
+                                           {"manual", 1, 0, 'm'}};
+    while ((opt = getopt_long(argc, argv, "t:rehm:?", long_options, NULL)) !=
            EOF) {
         switch (opt) {
         case 't': {
@@ -85,14 +84,29 @@ int main(int argc, char *argv[]) {
             num_threads = num_threads > 0 ? num_threads : 1;
             break;
         }
-        case 's': {
+        case 'r': {
+            str.clear();
+            for (size_t i = 0; i < MAX_LENGTH; i++) {
+                str += (int)(rand() / (RAND_MAX + 1.0) * 26) + 'a';
+            }
+            break;
+        }
+        case 'e': {
+            str = "abcdefghijklmnopqrstuvwxyz";
+            break;
+        }
+        case 'h': {
+            str.clear();
+            for (size_t i = 0; i < MAX_LENGTH - 1; i++) {
+                str += 'a';
+            }
+            str += 'b';
+            break;
+        }
+        case 'm': {
             char input_string[256];
             strcpy(input_string, optarg);
             str = std::string(input_string);
-            break;
-        }
-        case 'r': {
-            str_copy = atoi(optarg);
             break;
         }
         case '?':
@@ -102,8 +116,14 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    for (int i = 0; i < str_copy; i++) {
-        str += str;
+    if (str.length() == 0) {
+        for (size_t i = 0; i < MAX_LENGTH; i++) {
+            str += (int)(rand() / (RAND_MAX + 1.0) * 26) + 'a';
+        }
+    }
+
+    while (str.length() < MAX_LENGTH) {
+        str += str.substr(0, MAX_LENGTH - str.length());
     }
 
     int n = str.length();
@@ -119,7 +139,7 @@ int main(int argc, char *argv[]) {
 
     // Serial
     start_time = Clock::now();
-    for (int i = 0; i < num_run; i++) {
+    for (size_t i = 0; i < num_run; i++) {
         sa_serial(str, n, serial_output);
     }
     serial_time += duration_cast<dsec>(Clock::now() - start_time).count();
@@ -133,7 +153,7 @@ int main(int argc, char *argv[]) {
         printf("Use atomic addition inside radix:\n");
     #endif
     start_time = Clock::now();
-    for (int i = 0; i < num_run; i++) {
+    for (size_t i = 0; i < num_run; i++) {
         sa_radixsort(str, n, radix_output, num_threads);
     }
     radix_time += duration_cast<dsec>(Clock::now() - start_time).count();
@@ -142,7 +162,7 @@ int main(int argc, char *argv[]) {
 
     // Serial Myers
     start_time = Clock::now();
-    for (int i = 0; i < num_run; i++) {
+    for (size_t i = 0; i < num_run; i++) {
         sa_myersort(str, n, myers_output, num_threads);
     }
     myers_time += duration_cast<dsec>(Clock::now() - start_time).count();
@@ -151,7 +171,7 @@ int main(int argc, char *argv[]) {
 
     // Serial skew
     start_time = Clock::now();
-    for (int i = 0; i < num_run; i++) {
+    for (size_t i = 0; i < num_run; i++) {
         sa_skew(str, n, skew_output);
     }
     skew_time += duration_cast<dsec>(Clock::now() - start_time).count();
