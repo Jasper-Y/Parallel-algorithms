@@ -6,7 +6,9 @@ OBJS += skewalgorithm.o
 OBJS += main.o
 
 CXX = g++ -m64 -std=c++11
-CXXFLAGS = -I. -O3 -Wall -fopenmp -Wno-unknown-pragmas
+CXXFLAGS = -O3 -Wall -fopenmp -Wno-unknown-pragmas -DATOMIC_RADIX
+# CXXFLAGS = -O3 -Wall -fopenmp -Wno-unknown-pragmas
+# CXXFLAGS = -O3 -Wall -fopenmp -Wno-unknown-pragmas -ftree-vectorizer-verbose=1
 
 default: $(APP_NAME)
 

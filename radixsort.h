@@ -5,12 +5,7 @@
 #include <vector>
 #include <atomic>
 
-// Counting sort
-void counting_sort(int n, int bucket_size, std::vector<std::atomic<int>> &cnt,
-                   std::vector<int> &res, const std::vector<int> &label,
-                   const std::vector<int> &second_order);
-
 // Return sorted suffix array by radix sorting algorithm
-void sa_radixsort(const std::string &str, int n, std::vector<int> &order);
+void sa_radixsort(const std::string &str, int n, std::vector<int> &order, int num_threads);
 
 #endif // _RADIX_SORT_H

@@ -169,6 +169,6 @@ The general goals remain the same. We have done the algorithm search and obtaine
 
 * Fully parallel in the counting sort
 
-  For the radix sort algorithm, we traverse the whole array many times in the counting sort. We also traverse arrays outside the counting sort. For the traversal inside the counting sort, I am trying to use vectorization, ISPC, parallel prefix sum to test. Problem is that the std::for_each and `<execution>` library is still not working. For the parallel prefix sum, if the bucket size is small, this might not be very helpful. So it's not worthwhile for a try at this time.
+  For the radix sort algorithm, we traverse the whole array many times in the counting sort. We also traverse arrays outside the counting sort. For the traversal inside the counting sort, I am trying to use vectorization, ISPC, parallel prefix sum to test. Many for loops have been optimized by the compiler for vectorization. Some of them have strong dependency on the adjacent data so it will not benefit from vectorizations, for example, the increasing `p`. On the other hand, the loop in counting sort is adding the `cnt` array. I am trying to test atomic addition between threads. Another solution is to accumulate on local `cnt` array and finally do a reduction. Finally, the parallel prefix sum should work for a large bucket size.
 
   

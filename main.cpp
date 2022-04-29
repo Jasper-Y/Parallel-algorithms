@@ -60,15 +60,17 @@ void usage(const char *progname) {
 
 int main(int argc, char *argv[]) {
     srand(time(NULL));
-    int num_run = 100;
+    int num_run = 1;
     int str_copy = 0;
     int num_threads = 1;
     // std::string str = "mississipi";
     // std::string str = "abcdefghijklmnopqrstuvwxyz";
     std::string str = "";
-    for (int i = 0; i < 100000; i++) {
-        str += (int)(rand() / (RAND_MAX + 1.0) * 26) + 'a';
+    for (int i = 0; i < 50000; i++) {
+        // str += (int)(rand() / (RAND_MAX + 1.0) * 26) + 'a';
+        str += 'a';
     }
+    str += 'b';
 
     // parse commandline options
     int opt;
@@ -127,9 +129,12 @@ int main(int argc, char *argv[]) {
     // }
 
     // Serial radix
+    #if defined(ATOMIC_RADIX)
+        printf("Use atomic addition inside radix:\n");
+    #endif
     start_time = Clock::now();
     for (int i = 0; i < num_run; i++) {
-        sa_radixsort(str, n, radix_output);
+        sa_radixsort(str, n, radix_output, num_threads);
     }
     radix_time += duration_cast<dsec>(Clock::now() - start_time).count();
     printf("O(nlogn) serial radix:\n%f\n", radix_time / num_run);
