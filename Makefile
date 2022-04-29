@@ -12,6 +12,9 @@ CXXFLAGS = -O3 -Wall -fopenmp -Wno-unknown-pragmas
 # comment out this to test atomic operation in radix sort
 # CXXFLAGS = -O3 -Wall -fopenmp -Wno-unknown-pragmas -DATOMIC_RADIX
 
+# comment out this to test local accumulation with omp in radix sort
+# CXXFLAGS = -O3 -Wall -fopenmp -Wno-unknown-pragmas -DOMP_RADIX
+
 # comment out this to test without vectorization 
 # CXXFLAGS = -O3 -Wall -fopenmp -Wno-unknown-pragmas -fno-tree-vectorize
 

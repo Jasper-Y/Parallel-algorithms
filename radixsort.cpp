@@ -5,6 +5,7 @@
 #include <cstring>
 #include <iostream>
 #include <numeric>
+#include <omp.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,6 +73,36 @@ void counting_sort(int n, int bucket_size, std::vector<int> &cnt,
     }
 }
 
+void counting_sort_omp(int n, int bucket_size, std::vector<int> &cnt,
+                       std::vector<int> &res, const std::vector<int> &label,
+                       const std::vector<int> &second_order, int n_threads) {
+    std::fill(cnt.begin(), cnt.end(), 0);
+    int thread_size = (n + n_threads - 1) / n_threads;
+    int i = 0;
+#pragma omp parallel for private(i)
+    for (i = 0; i < n_threads * thread_size; i += thread_size) {
+        std::vector<int> local_cnt(bucket_size, 0);
+        int start = i;
+        int end = std::min(n, i + thread_size);
+        for (int j = start; j < end; j++) {
+            local_cnt[label[j]]++;
+        }
+        for (int k = 0; k < bucket_size; k++) {
+#pragma omp atomic
+            cnt[k] += local_cnt[k];
+        }
+    }
+    for (int i = 1; i < bucket_size; i++) {
+        // In our case, bucket size is usually alphabet size so parallel
+        // exclusive prefix sum may not be effective. But parallel prefix
+        // sum is definitely a great attempt.
+        cnt[i] += cnt[i - 1];
+    }
+    for (int i = n - 1; i >= 0; i--) {
+        res[--cnt[label[i]]] = second_order[i];
+    }
+}
+
 void sa_radixsort(const std::string &str, int n, std::vector<int> &order,
                   int num_threads) {
     int bucket_size = std::max(n, 255);
@@ -98,6 +129,11 @@ void sa_radixsort(const std::string &str, int n, std::vector<int> &order,
         args[i].cnt = &cnt[0];
         args[i].label = &label[0];
     }
+#elif defined(OMP_RADIX)
+    // std::vector<std::vector<int>> local_cnt(num_threads,
+    // std::vector<int>(bucket_size));
+    std::vector<int> cnt(bucket_size);
+    omp_set_num_threads(num_threads);
 #else
     std::vector<int> cnt(bucket_size);
 #endif
@@ -105,6 +141,9 @@ void sa_radixsort(const std::string &str, int n, std::vector<int> &order,
 #if defined(ATOMIC_RADIX)
     counting_sort_atomic(n, bucket_size, cnt, order, label, second_order,
                          num_threads, workers, args);
+#elif defined(OMP_RADIX)
+    counting_sort_omp(n, bucket_size, cnt, order, label, second_order,
+                      num_threads);
 #else
     counting_sort(n, bucket_size, cnt, order, label, second_order);
 #endif
@@ -131,6 +170,9 @@ void sa_radixsort(const std::string &str, int n, std::vector<int> &order,
 #if defined(ATOMIC_RADIX)
         counting_sort_atomic(n, bucket_size, cnt, order, reorder_label,
                              second_order, num_threads, workers, args);
+#elif defined(OMP_RADIX)
+        counting_sort_omp(n, bucket_size, cnt, order, reorder_label,
+                          second_order, num_threads);
 #else
         counting_sort(n, bucket_size, cnt, order, reorder_label, second_order);
 #endif
