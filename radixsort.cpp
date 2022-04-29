@@ -92,6 +92,28 @@ void counting_sort_omp(int n, int bucket_size, std::vector<int> &cnt,
             cnt[k] += local_cnt[k];
         }
     }
+
+    /**
+     * A second way for local accumulation
+     *
+    std::vector<std::vector<int>> local_cnt(n_threads,
+                                            std::vector<int>(bucket_size, 0));
+    #pragma omp parallel for
+    for (int i = 0; i < n_threads; i++) {
+        int start = i * thread_size;
+        int end = std::min(n, start + thread_size);
+        for (int j = start; j < end; j++) {
+            local_cnt[i][label[j]]++;
+        }
+    }
+    #pragma omp parallel for
+    for (int i = 0; i < bucket_size; i++) {
+        for (int j = 0; j < n_threads; j++) {
+            cnt[i] += local_cnt[j][i];
+        }
+    }
+    */
+
     for (int i = 1; i < bucket_size; i++) {
         // In our case, bucket size is usually alphabet size so parallel
         // exclusive prefix sum may not be effective. But parallel prefix
