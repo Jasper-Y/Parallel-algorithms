@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void cudaScanThrust(int *data, int len);
+
 typedef struct {
     int n;
     int start;
@@ -17,6 +19,16 @@ typedef struct {
     const int *label;
     std::atomic<int> *cnt;
 } WorkerArgs;
+
+void inclusive_scan(int *data, int len) {
+#if defined(USE_CUDA)
+    cudaScanThrust(data, len);
+#else
+    for (int i = 1; i < len; i++) {
+        data[i] += data[i - 1];
+    }
+#endif
+}
 
 void *counting_partial(void *threadArgs) {
     WorkerArgs *args = static_cast<WorkerArgs *>(threadArgs);
@@ -43,10 +55,8 @@ void counting_sort_atomic(int n, int bucket_size,
         pthread_join(workers[i], NULL);
     }
 
+    // For atomic operation, only use CPU linear inclusive sum
     for (int i = 1; i < bucket_size; i++) {
-        // In our case, bucket size is usually alphabet size so parallel
-        // exclusive prefix sum may not be effective. But parallel prefix sum is
-        // definitely a great attempt.
         cnt[i] += cnt[i - 1];
     }
     for (int i = n - 1; i >= 0; i--) {
@@ -62,12 +72,7 @@ void counting_sort(int n, int bucket_size, std::vector<int> &cnt,
     for (int i = 0; i < n; i++) {
         cnt[label[i]]++;
     }
-    for (int i = 1; i < bucket_size; i++) {
-        // In our case, bucket size is usually alphabet size so parallel
-        // exclusive prefix sum may not be effective. But parallel prefix
-        // sum is definitely a great attempt.
-        cnt[i] += cnt[i - 1];
-    }
+    inclusive_scan(&cnt[0], bucket_size);
     for (int i = n - 1; i >= 0; i--) {
         res[--cnt[label[i]]] = second_order[i];
     }
@@ -114,12 +119,8 @@ void counting_sort_omp(int n, int bucket_size, std::vector<int> &cnt,
     }
     */
 
-    for (int i = 1; i < bucket_size; i++) {
-        // In our case, bucket size is usually alphabet size so parallel
-        // exclusive prefix sum may not be effective. But parallel prefix
-        // sum is definitely a great attempt.
-        cnt[i] += cnt[i - 1];
-    }
+    inclusive_scan(&cnt[0], bucket_size);
+
     for (int i = n - 1; i >= 0; i--) {
         res[--cnt[label[i]]] = second_order[i];
     }

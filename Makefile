@@ -1,33 +1,41 @@
 APP_NAME=suffixarray
 
+OBJS += scan.o
 OBJS += radixsort.o
 OBJS += myersort.o
 OBJS += skewalgorithm.o
 OBJS += main.o
 
 CXX = g++ -m64 -std=c++11
-# this is the normal usage
+NVCC = nvcc
+LDFLAGS = -L/usr/local/depot/cuda-10.2/lib64/ -lcudart
+NVCCFLAGS = -O3 -m64 --gpu-architecture compute_61 -ccbin /usr/bin/gcc
+
+OPTIONS = 
+
+# this is the default usage
 CXXFLAGS = -O3 -Wall -fopenmp -Wno-unknown-pragmas
 
-# comment out this to test atomic operation in radix sort
-# CXXFLAGS = -O3 -Wall -fopenmp -Wno-unknown-pragmas -DATOMIC_RADIX
+CXXFLAGS += $(foreach OPTION,$(OPTIONS),$(OPTION))
 
-# comment out this to test local accumulation with omp in radix sort
-# CXXFLAGS = -O3 -Wall -fopenmp -Wno-unknown-pragmas -DOMP_RADIX
-
-# comment out this to test without vectorization 
-# CXXFLAGS = -O3 -Wall -fopenmp -Wno-unknown-pragmas -fno-tree-vectorize
-
-# comment out this to see the log for vectorization result
-# CXXFLAGS = -O3 -Wall -fopenmp -Wno-unknown-pragmas -ftree-vectorizer-verbose=1
+# compile command: make OPTIONS="xx xx xx"
+# replace xx with your options:
+# -DATOMIC_RADIX: test atomic operation in radix sort. This option will ignore the below two.
+# -DUSE_CUDA: use CUDA in radix sort
+# -DOMP_RADIX: test local accumulation with omp in radix sort
+# -fno-tree-vectorize: compile without vectorization
+# -ftree-vectorizer-verbose=1: see the log for vectorization result
 
 default: $(APP_NAME)
 
 $(APP_NAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS)
 
 %.o: %.cpp
 	$(CXX) $< $(CXXFLAGS) -c -o $@
+
+%.o: %.cu
+	$(NVCC) $< $(NVCCFLAGS) -c -o $@
 
 clean:
 	/bin/rm -rf *~ *.o $(APP_NAME) *.class

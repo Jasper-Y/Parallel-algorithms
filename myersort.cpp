@@ -11,6 +11,10 @@
 #include <stdlib.h>
 #include <vector>
 
+using namespace std::chrono;
+typedef std::chrono::high_resolution_clock Clock;
+typedef std::chrono::duration<double> dsec;
+
 struct comp {
     bool operator()(const std::pair<const char *, int> &lhs,
                     const std::pair<const char *, int> &rhs) {
@@ -89,6 +93,7 @@ void sa_myersort(const std::string &str, int n, std::vector<int> &output,
     // substring(output[i]:) is the ith suffix currently.
     omp_set_num_threads(num_threads);
 
+    // auto start_time = Clock::now();
     std::map<char, std::vector<int>> groups;
     for (int i = 0; i < n; i++) {
         char s = str[i];
@@ -111,6 +116,10 @@ void sa_myersort(const std::string &str, int n, std::vector<int> &output,
         }
         num += iter->second.size();
     }
+
+    // double serial_time = duration_cast<dsec>(Clock::now() - start_time).count();
+
+    // printf("Serial part in the myers algorithm: %lf\n", serial_time);
 
     int i = 0;
     int num_task = next_round.size();
