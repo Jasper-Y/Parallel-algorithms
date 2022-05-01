@@ -1,14 +1,4 @@
 #include "radixsort.h"
-#include <algorithm>
-#include <atomic>
-#include <chrono>
-#include <cstring>
-#include <iostream>
-#include <numeric>
-#include <omp.h>
-#include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 void cudaScanThrust(int *data, int len);
 
@@ -127,8 +117,8 @@ void counting_sort_omp(int n, int bucket_size, std::vector<int> &cnt,
 }
 
 void sa_radixsort(const std::string &str, int n, std::vector<int> &order,
-                  int num_threads) {
-    int bucket_size = std::max(n, 255);
+                  int num_threads, int8_t alphabet_size) {
+    int bucket_size = std::max(n, (int)alphabet_size + 1);
     // Same substring have the same label value
     std::vector<int> label(n);
     std::vector<int> reorder_label(n);

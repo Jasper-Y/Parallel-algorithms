@@ -1,15 +1,4 @@
 #include "myersort.h"
-#include <algorithm>
-#include <chrono>
-#include <cstring>
-#include <iostream>
-#include <map>
-#include <numeric>
-#include <omp.h>
-#include <queue>
-#include <stdio.h>
-#include <stdlib.h>
-#include <vector>
 
 using namespace std::chrono;
 typedef std::chrono::high_resolution_clock Clock;

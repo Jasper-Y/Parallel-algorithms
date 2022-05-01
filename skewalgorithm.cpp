@@ -2,12 +2,6 @@
 // O(n)
 
 #include "skewalgorithm.h"
-#include <cstring>
-#include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include <vector>
 
 using namespace std;
 
@@ -106,13 +100,14 @@ void suffixArray(int *s, int *SA, int n, int K) {
     delete[] s0;
 }
 
-void sa_skew(const std::string &str, int n, std::vector<int> &output) {
+void sa_skew(const std::string &str, int n, std::vector<int> &output,
+             int8_t alphabet_size) {
     int *s = new int[n + 3];
     s[n] = s[n + 1] = s[n + 2] = 0;
     for (int i = 0; i < n; i++) {
-        s[i] = (int)(str[i] - 'a' + 1);
+        s[i] = (int)(str[i]);
     }
-    suffixArray(s, &output[0], n, 27); // a: 1, z: 26, s[n:n+3] = 0
+    suffixArray(s, &output[0], n, (int)alphabet_size + 1); // s[n:n+3] = 0
     std::vector<int> res(n);
     delete[] s;
 }

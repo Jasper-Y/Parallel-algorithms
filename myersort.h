@@ -1,6 +1,16 @@
 #ifndef _MYERS_SORT_H
 #define _MYERS_SORT_H
 
+#include <algorithm>
+#include <chrono>
+#include <cstring>
+#include <iostream>
+#include <map>
+#include <numeric>
+#include <omp.h>
+#include <queue>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string>
 #include <vector>
 
