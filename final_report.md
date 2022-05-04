@@ -83,7 +83,7 @@ In the main program, we provide three different string construction methods for 
 ```bash
   -t  --threads <N>         Use N threads
   -r  --random (default)    Randomly generate a string
-  -e  --easy                Generate a fairly easy test case by replicating the alphabet 'abcd...xyz' so that 															adjacent suffixes are different
+  -a  --alphabet            Generate a test string by replicating the alphabet 'abcd...xyz' so that adjacent 																suffixes are different
   -h  --hard                Generate the worst case that require the algorithms go into the final iteration. The 														 string will be 'aaaaa...aaaab'
   -m  --manual <string>     Specify input string. No longer than 256. The input string will be replicated to the 														 length of the defined length
   -?  --help                This message
@@ -169,3 +169,7 @@ The reason is the size of different digits for each iteration is fixed. In the a
 ### Results
 
 We look forward to optimizing different algorithms to see the changes from sequential to parallel implementations. We measure the time for solving different problems and the less time it costs, the better performance this algorithm has.
+
+As mentioned in the [problem sets](#problem-sets) section, we use three ways to construct the input string. The default string is generated randomly between 1 to 127. Another test case is to sort the string with the same characters except the last one, i.e., `aaaa...aaab` so that most of the suffixes are not able to be distringuished until we compare the characters in the end. For most algorithms we use, this is supposed to be the worst case. The last test string is designed to be the easiest case, however, it is actually more complicated than the random string. We duplicate the alphabets from `a` to `z` so this string is `abcd...xyzabc...`. Intuitively the adjacent suffixes can be easily distinguished so we thought this might outperform all other cases. Actually, the suffixes with interleaves of a multiple of 26 start with the identical characters so if they are grouped into the sub-tasks, it would require more time to sort them. We use **random**, **hard**, **alphabet** to represent these three problem sets.
+
+Since the suffix array construction focuses more on the time cost with a large input data size, we duplicated

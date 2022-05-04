@@ -1,4 +1,4 @@
-#include "myersort.h"
+#include "divideconquer.h"
 
 using namespace std::chrono;
 typedef std::chrono::high_resolution_clock Clock;
@@ -51,7 +51,8 @@ void sort_subset_iterate(const std::string &str, const std::vector<int> &target,
             std::map<std::pair<const char *, int>, std::vector<int>, comp>
                 groups;
             for (auto x : new_task.second) {
-                std::pair<const char *, int> p = std::make_pair(&str[x + len], len);
+                std::pair<const char *, int> p =
+                    std::make_pair(&str[x + len], len);
                 auto iter = groups.find(p);
                 if (iter != groups.end()) {
                     iter->second.push_back(x);
@@ -76,8 +77,8 @@ void sort_subset_iterate(const std::string &str, const std::vector<int> &target,
     }
 }
 
-void sa_myersort(const std::string &str, int n, std::vector<int> &output,
-                 int num_threads) {
+void sa_divideconquer(const std::string &str, int n, std::vector<int> &output,
+                      int num_threads) {
     // Distince values. The value for output[i] means the
     // substring(output[i]:) is the ith suffix currently.
     omp_set_num_threads(num_threads);
@@ -108,7 +109,7 @@ void sa_myersort(const std::string &str, int n, std::vector<int> &output,
 
     // double serial_time = duration_cast<dsec>(Clock::now() - start_time).count();
 
-    // printf("Serial part in the myers algorithm: %lf\n", serial_time);
+    // printf("Serial part in the divide conquer algorithm: %lf\n", serial_time);
 
     int i = 0;
     int num_task = next_round.size();

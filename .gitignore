@@ -33,6 +33,6 @@
 
 radixsort
 suffixarray
-myersort
+divideconquer
 .vscode/
 .DS_Store

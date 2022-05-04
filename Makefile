@@ -2,7 +2,7 @@ APP_NAME=suffixarray
 
 OBJS += scan.o
 OBJS += radixsort.o
-OBJS += myersort.o
+OBJS += divideconquer.o
 OBJS += skewalgorithm.o
 OBJS += main.o
 

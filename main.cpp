@@ -1,4 +1,4 @@
-#include "myersort.h"
+#include "divideconquer.h"
 #include "radixsort.h"
 #include "skewalgorithm.h"
 #include <algorithm>
@@ -53,8 +53,8 @@ void usage(const char *progname) {
     printf("Program Options:\n");
     printf("  -t  --threads <N>         Use N threads\n");
     printf("  -r  --random (default)    Randomly generate a string\n");
-    printf("  -e  --easy                Generate a fairly easy test case that "
-           "adjacent suffixes are different\n");
+    printf("  -a  --alphabet            Generate a test string by replicating "
+           "the alphabet so that adjacent suffixes are different\n");
     printf("  -h  --hard                Generate the worst case that require "
            "the algorithms go into the final iteration\n");
     printf("  -m  --manual <string>     Specify input string. No longer than "
@@ -77,10 +77,10 @@ int main(int argc, char *argv[]) {
     int opt;
     static struct option long_options[] = {{"threads", 1, 0, 't'},
                                            {"random", 1, 0, 'r'},
-                                           {"easy", 1, 0, 'e'},
+                                           {"alphabet", 1, 0, 'a'},
                                            {"hard", 1, 0, 'h'},
                                            {"manual", 1, 0, 'm'}};
-    while ((opt = getopt_long(argc, argv, "t:rehm:?", long_options, NULL)) !=
+    while ((opt = getopt_long(argc, argv, "t:rahm:?", long_options, NULL)) !=
            EOF) {
         switch (opt) {
         case 't': {
@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
             }
             break;
         }
-        case 'e': {
+        case 'a': {
             str = "abcdefghijklmnopqrstuvwxyz";
             break;
         }
@@ -133,26 +133,26 @@ int main(int argc, char *argv[]) {
     int n = str.length();
     double serial_time = 0;
     double radix_time = 0;
-    double myers_time = 0;
+    double divideconquer_time = 0;
     double skew_time = 0;
     std::vector<int> serial_output(n);
     std::vector<int> radix_output(n);
-    std::vector<int> myers_output(n);
+    std::vector<int> divideconquer_output(n);
     std::vector<int> skew_output(n + 3);
     auto start_time = Clock::now();
 
-    // Serial
+    // Serial brute force
     start_time = Clock::now();
     for (size_t i = 0; i < num_run; i++) {
         sa_serial(str, n, serial_output);
     }
     serial_time += duration_cast<dsec>(Clock::now() - start_time).count();
-    printf("O(n^2logn) serial:\t\t\t%f\n\n", serial_time / num_run);
+    printf("Serial brute force:\t\t\t%f\n\n", serial_time / num_run);
     // for (auto i : serial_output) {
     //     std::cout << i << ": " << str.substr(i, n - i) << std::endl;
     // }
 
-    // Serial radix
+    // Algorithm with radix sorting
 #if defined(ATOMIC_RADIX)
     printf("Use atomic addition inside radix sort\n");
 #else
@@ -168,27 +168,30 @@ int main(int argc, char *argv[]) {
         sa_radixsort(str, n, radix_output, num_threads, ALPHABET_SIZE);
     }
     radix_time += duration_cast<dsec>(Clock::now() - start_time).count();
-    printf("O(nlogn) radix sorting algorithm:\t%f\n\n", radix_time / num_run);
+    printf("Algorithm with radix sorting:\t%f\n\n", radix_time / num_run);
     check_result(serial_output, radix_output, n, "radixsort");
 
-    // Serial Myers
-    printf("Use %d threads in myers algorithm\n", num_threads);
+    // Divide and conquer
+    printf("Use %d threads in divide-conquer algorithm\n", num_threads);
     start_time = Clock::now();
     for (size_t i = 0; i < num_run; i++) {
-        sa_myersort(str, n, myers_output, num_threads);
+        sa_divideconquer(str, n, divideconquer_output, num_threads);
     }
-    myers_time += duration_cast<dsec>(Clock::now() - start_time).count();
-    check_result(serial_output, myers_output, n, "myers algorithm");
-    printf("O(nlogn) myers algorithm:\t\t%f\n\n", myers_time / num_run);
+    divideconquer_time +=
+        duration_cast<dsec>(Clock::now() - start_time).count();
+    check_result(serial_output, divideconquer_output, n,
+                 "divide and conquer algorithm");
+    printf("Divide and conquer algorithm:\t\t%f\n\n",
+           divideconquer_time / num_run);
 
-    // Serial skew
+    // Skew algorithm
     start_time = Clock::now();
     for (size_t i = 0; i < num_run; i++) {
         sa_skew(str, n, skew_output, ALPHABET_SIZE);
     }
     skew_time += duration_cast<dsec>(Clock::now() - start_time).count();
     check_result(serial_output, skew_output, n, "skew algorithm");
-    printf("O(n) skew algorithm:\t\t\t%f\n\n", skew_time / num_run);
+    printf("Skew algorithm:\t\t\t%f\n\n", skew_time / num_run);
 
     return 0;
 }
