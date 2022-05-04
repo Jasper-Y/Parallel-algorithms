@@ -199,7 +199,7 @@ make
 ./suffixarray -h
 ```
 
-Sequential runtime baseline in milliseconds:
+Sequential **runtime** baseline in milliseconds:
 
 |                           | Random | Alphabet |   Hard   |
 | :-----------------------: | :----: | :------: | :------: |
@@ -219,7 +219,7 @@ make
 ./suffixarray -t 8
 ```
 
-Divide and conquer algorithm runtime in milliseconds:
+Divide and conquer algorithm **runtime** in milliseconds:
 
 | Number of threads | Random | Alphabet |   Hard   |
 | :---------------: | :----: | :------: | :------: |
@@ -228,7 +228,7 @@ Divide and conquer algorithm runtime in milliseconds:
 |         4         | 9.464  | 209.757  | 1160.680 |
 |         8         | 6.729  | 121.722  | 1161.137 |
 
-Speedup:
+**Speedup**:
 
 | Number of threads | Random | Alphabet | Hard |
 | :---------------: | :----: | :------: | :----: |
@@ -252,7 +252,7 @@ For this multi-thread divide and conquer algorithm, the most important key aspec
 
   Since the vectorization is enabled with `-O3` g++ optimization level by default, we benchmark the baseline with vectorization. Here is the results without vectorization, after compiled by `make OPTIONS="-fno-tree-vectorize"`.
 
-  The runtime of programs without g++ vectorization:
+  The **runtime** of programs without g++ vectorization:
 
   |                           | Random | Alphabet |   Hard   |
   | :-----------------------: | :----: | :------: | :------: |
@@ -261,7 +261,7 @@ For this multi-thread divide and conquer algorithm, the most important key aspec
   | Construct with radix sort | 2.411  |  11.297  |  7.532   |
   |      Skew algorithm       | 4.063  |  3.662   |  3.076   |
 
-  The difference between runtime with and without vectorization is trivial. There are multiple reasons. First, the **fraction of vectorizable loop** is small. Most of the traversals in the algorithms have strong dependency and have to run in order. Second, the bottleneck is more like the **memory accessing** instead of arithmetic computation. No locality optimization is found to be useful. Finally, there are still more optimizations applied by the compiler, such as loop unrolling, prediction, etc. Therefore the vectorization is possibly replaced with loop unrolling. Though the result is not ideal, the process of finding potential vectorizable code and analyzing the dependency is more meaningful for us to develop better programs in the future.
+  The difference between runtime with and without vectorization is trivial. There are multiple reasons. First, the **fraction of vectorizable loop** is small. Most of the traversals in the algorithms have strong dependency and have to run in order. Second, the bottleneck is more like the **memory accessing** instead of arithmetic computation. Sometimes there is no benefit because of additional complications with trying to combine the different data items and then sorting out what goes where when the calculation is finished. Finally, there are still more optimizations applied by the compiler, such as loop unrolling, prediction, etc. Therefore the vectorization is possibly replaced with loop unrolling. Though the result is not ideal, the process of finding potential vectorizable code and analyzing the dependency is more meaningful for us to develop better programs in the future.
 
 * **Multi-thread atomic addition, OpenMP local sum, GPU inclusive scan**
 
@@ -279,7 +279,7 @@ For this multi-thread divide and conquer algorithm, the most important key aspec
   ./suffixarray -h
   ```
 
-  These strategies are only used in the radix sorting algorithm. We benchmarked the results as below:
+  These strategies are only used in the radix sorting algorithm. We benchmarked the **runtime** results as below:
 
   |                                    | Random | Alphabet |  Hard  |
   | :--------------------------------: | :----: | :------: | :----: |
