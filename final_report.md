@@ -55,7 +55,7 @@ We adopted four algorithms and implemented the sequential version of them.
 
 * **Divide and conquer**
 
-  This algorithm uses the idea of divide and conquer to realize an O(nlog<sup>2</sup>n) to at worst O(n<sup>2</sup>log<sup>2</sup>n) time complexity (depends on different problem sets). Different from brute force sorting, we have a list of target suffixes to sort. Then we first sort the suffixes by a specific range of characters in the suffix. We use a red-black tree to store the sorting result and each leaf on the tree have a list to store suffixes. The suffixes fall into the same leaf on the RB tree should have exactly the same substring. So for each element in the target suffixes list, we look up the key (i.e., the substring in particular range). If found, we add this suffix into the corresponding leaf's list. Otherwise, we insert a new leaf with the substring as the key. Finally, we traverse the RB tree. If the length of the list is one, then the suffix in that list is unique, which means the order of this suffix is determined. Otherwise, we save the list of suffix in the leaf as the target suffixes list in the next iteration. Each target suffixes list comes with a specific area in the output array. This area is the places that these suffixes have in the final sorted suffix array.
+  This algorithm uses the idea of divide and conquer to realize an O(nlog<sup>2</sup>n) to at worst O(n<sup>2</sup>log<sup>2</sup>n) time complexity (depends on different problem sets). Different from brute force sorting, we have a list of target suffixes to sort. Then we first sort the suffixes by a specific range of characters in the suffix. We use a red-black tree to store the sorting result and each leaf on the tree has a list to store suffixes. The suffixes fall into the same leaf on the RB tree should have exactly the same substring with a certain length. So for each element in the target suffixes list, we look up the key (i.e., the substring in particular range). If found, we add this suffix into the corresponding leaf's list. Otherwise, we insert a new leaf with the substring as the key. Finally, we traverse the RB tree. If the length of the list is one, then the suffix in that list is unique, which means the order of this suffix is determined. Otherwise, we save the list of suffix in the leaf as the target suffixes list in the next iteration. Each target suffixes list comes with a specific area in the output array. This area is the places that these suffixes have in the final sorted suffix array.
 
   After each iteration (RB tree construction and traversal), we move the index of the substring range to the right of the previous range and double the length of substring. For example, when we are operating the suffix `S[k] = str.substr(k, len=n - k)`, in the first iteration, the length of the substring is 1 and the substring we use as the key for RB tree is `str[k]`. If the list of suffixes where `S[k]` exists has other suffixes, then this list would be pushed to the queue for the second iteration. In the second iteration, the length of substring is 2 and we use `str[k+1], ..., str[k+2]` as the key. Then we use `str[k+3], ..., str[k+6]`, `str[k+7], ..., str[k+14]` as the keys if these keys are also the substring of some other suffixes.
 
@@ -111,17 +111,29 @@ We also have different compile options to specify which parallel strategy to use
 
 ##### Parallel divide and conquer algorithm
 
-Because of the independency among the sub-tasks, we assign the tasks to threads using OpenMP on CPU. We initialize the OpenMP threads by `omp_set_num_threads`. To balance the work loads for each threads, we use the `dynamic` pattern in the `omp` instructions. The data structure keeps the same as we use a new list to store the targets for a task. By virtue of OpenMP, we can simply pass the target list to the function which is responsible for one sub-task at a time. The building process of the target list and the calculation for its range in the final output need to be carefully implemented.
+Because of the independency among the sub-tasks, we assign the tasks to threads **using OpenMP on CPU**. We initialize the OpenMP threads by `omp_set_num_threads`. To balance the work loads for each threads, we use the `dynamic` pattern in the `omp` instructions. The data structure keeps the same as we use a new list to store the targets for a task. By virtue of OpenMP, we can simply pass the target list to the function which is responsible for one sub-task at a time. The building process of the target list and the calculation for its range in the final output need to be carefully implemented.
 
-In the above implementation, we split the work load by using the first character of the string as the keys. In that case, the number of tasks is at most the alphabet size. We tried to split the work load by using the first two characters of the string so there would be more tasks and the work load distribution should be more balanced. However, due to the increasing propotion of sequential calculation, i.e., the first iteration on the two characters, the speedup was lower than the previous implementation. Meanwhile, the overhead of creating and operating OpenMP threads increases. Therefore, this attempt did not work well for better speedups than the initial one.
+In the above implementation, we **split the work load by using the first character** of the string as the keys. In that case, the number of tasks is at most the alphabet size. We tried to split the work load by using the first two characters of the string so there would be more tasks and the work load distribution should be more balanced. However, due to the increasing propotion of sequential calculation, i.e., the first iteration on the two characters, the speedup was lower than the previous implementation. Meanwhile, the overhead of creating and operating OpenMP threads increases. Therefore, this attempt did not work well for better speedups than the initial one.
 
 ##### Parallel the algorithm that uses radix sorting
 
-Most steps of this algorithm are traversing the whole array in order. And the value to store for each element in each iteration is not deterministic. This strong dependency prevents us from splitting the work load into many processors. Therefore, we digged into each traversal and looked for the potential opportunities to parallelize.
+Most steps of this algorithm are traversing the whole array in order. And the value to store for each element in each iteration is not deterministic. This **strong dependency** prevents us from splitting the work load into many processors. Therefore, we digged into each traversal and looked for the potential opportunities to parallelize.
 
 * **Vectorization**
 
-  For the traversal with changing counter (the variable `p` in the code), the upcoming element does not know its `p` value until the previous store is executed so it's hard to parallelize. Some others can be optimized by vectorization and SIMD instructions. If we use `-O2` or `-O3` optimization to compile the program, it will automatically vectorize the `for` loops. We use `make OPTIONS="-ftree-vectorizer-verbose=1"` to see the log for vector optimization:
+  For the traversal with changing counter (the variable `p` in the code), the upcoming element does not know its `p` value until the previous store is executed so it's hard to parallelize. Some others can be optimized by vectorization and SIMD instructions. For example, these traversals are vectorized by the compiler:
+
+  ```c++
+  for (int i = 0; i < n; i++) { // Vectorizable
+      label[i] = (int)str[i];
+  }
+  ...
+  for (int i = n - len; i < n; i++) { // Vectorizable
+      second_order[p++] = i;
+  }
+  ```
+
+  If we use `-O2` or `-O3` optimization to compile the program, it will automatically vectorize the `for` loops. We use `make OPTIONS="-ftree-vectorizer-verbose=1"` to see the log for vector optimization:
 
   ```
   ...
@@ -129,7 +141,7 @@ Most steps of this algorithm are traversing the whole array in order. And the va
   radixsort.cpp:119: note: vectorized 3 loops in function.
   ...
   ```
-
+  
 * **Multi-thread atomic addition**
 
   One of the traversal inside the counting sort is to count the numbers of different labels. It simply adds the count indexed by the label by 1.
@@ -144,7 +156,7 @@ Most steps of this algorithm are traversing the whole array in order. And the va
 
 * **Multi-thread local sum and reduction**
 
-  For the same code snippet above, the cache conflicts should be time consuming because the value of `label[i]` is not continuous so this code has a poor locality. So it might be a good idea to split the work for different threads with the same static assignment, and accumulate on a local array and finally reduce among all the threads. The work for threads is supposed to run in sequential so we also use CPU. We use OpenMP for simple threads operation and use OpenMP atomic feature for the reduction.
+  For the same code snippet above, the cache conflicts should be time consuming because the value of `label[i]` is not continuous so this code has a poor locality. So it might be a good idea to split the work for different threads with static assignment, and **accumulate on a local array and finally reduce among all the threads**. The work for threads is supposed to run in sequential so we also use CPU. We use OpenMP for simple threads operation and use OpenMP atomic feature for the reduction.
 
 * **Parallel inclusive prefix sum**
 
@@ -156,9 +168,9 @@ Most steps of this algorithm are traversing the whole array in order. And the va
   }
   ```
 
-  Recall that in the assignment 2, we have implemented a parallel version of exclusive scan, which decreases the time span to O(logn) on GPU. For the radix sorting algorithm, the `bucket_size` is the number of different labels. This size is increasing until the very last iteration after which the size should be the same as the input size `n`. Therefore, parallelizing this code should be helpful when `n` is significant large. Before each radix sorting, we copy the data from host to the GPU device. After the inclusive scan, we copy the data back to the host. We use the `thrust` library for inclusive scan.
+  Recall that in the assignment 2, we have implemented a parallel version of exclusive scan, which decreases the time span to O(logn) on GPU. For the radix sorting algorithm, the `bucket_size` is the number of different labels. This size is increasing until the very last iteration after which the size should be the same as the input size `n`. Therefore, parallelizing this code should be helpful when `n` is **significant large**. Before each radix sorting, we copy the data from host to the GPU device. After the inclusive scan, we copy the data back to the host. We use the `thrust` library for inclusive scan.
 
-* Parallel the radix sorting
+* **Parallel the radix sorting**
 
   Finally, we discuss about this failure attempt. This idea is inspired from the general radix sort where each processors sort part of the data based on a uniform key digit. Then they sends and receives the specific portion of data from other processors and proceeds to the next digit. For instance, 5 processors process decimal integers. For the first iteration, each processor sorts its own data, keeps the data ends with i/N and sends out others. The first processor has xxx..xx0 and xxx..xx1. The second has xxx..xx2 and xxx..xx3. Then they sort the exchanged data based on the 2nd digit. And now first processor keeps and receives xxx..xx0x and xxx..xx1x.
 
@@ -179,13 +191,15 @@ As mentioned in the [problem sets](#problem-sets) section, we use three ways to 
 Since the suffix array construction focuses more on the time cost with a large input data size, we unify the length to 90000 for all the input string. The varying conditions for experiments are problem sets, number of threads, and parallel options. Here we use single thread with default vectorization as the baseline.
 
 ```bash
-# compile the program
+# compile the program. Remember to run `make clean` if nothing is compiled
 make
-# run the program with problem sets
+# run the program with different problem sets
 ./suffixarray -r
 ./suffixarray -a
 ./suffixarray -h
 ```
+
+Sequential runtime baseline in milliseconds:
 
 |                           | Random | Alphabet |   Hard   |
 | :-----------------------: | :----: | :------: | :------: |
@@ -194,27 +208,18 @@ make
 | Construct with radix sort | 2.385  |  11.326  |  7.499   |
 |      Skew algorithm       | 4.126  |  3.613   |  3.106   |
 
-(Below is the benchmark without g++ vectorization)
-
-|                           | Random | Alphabet |   Hard   |
-| :-----------------------: | :----: | :------: | :------: |
-|        Brute Force        | 19.397 | 2240.824 | 3731.075 |
-|    Divide and conquer     | 19.288 | 759.704  | 1165.561 |
-| Construct with radix sort | 2.411  |  11.297  |  7.532   |
-|      Skew algorithm       | 4.063  |  3.662   |  3.076   |
-
-
-
 ##### Parallel divide and conquer algorithm
 
 We use OpenMP to statically assign the work loads onto threads. This is controlled by runtime arguments so no compile options are needed. We only target at the divide and conquer algorithm.
 
 ```bash
-# compile the program
+# compile the program. Remember to run `make clean` if nothing is compiled
 make
-# run the program with number of threads and specific problem sets
+# run the program with number of threads and specific problem sets (use random case by default)
 ./suffixarray -t 8
 ```
+
+Divide and conquer algorithm runtime in milliseconds:
 
 | Number of threads | Random | Alphabet |   Hard   |
 | :---------------: | :----: | :------: | :------: |
@@ -223,8 +228,106 @@ make
 |         4         | 9.464  | 209.757  | 1160.680 |
 |         8         | 6.729  | 121.722  | 1161.137 |
 
+Speedup:
 
+| Number of threads | Random | Alphabet | Hard |
+| :---------------: | :----: | :------: | :----: |
+|         2         | 1.344  |  1.993   |  -   |
+|         4         | 2.015  |  3.625   |  -   |
+|         8         | 2.834  |  6.247   |  -   |
+
+For this multi-thread divide and conquer algorithm, the most important key aspects for the speedup performance are the fraction of sequential work and workload distribution. 
+
+* Fraction of sequential work
+
+  When we run the code in sequential, we measure the first sorting, which must be done before assigning tasks to threads. The average runtime for that first sorting in **random** test case is 2.83ms, 14.8% of the total work. According to the **Amdahl’s law**, `s` equals 0.148, then the maximum speedup with 8 threads is 3.9X. On the contrary, the fraction of sequential work in **alphabet** test case is only 0.05%, because much work and iterations are completed within the sub-tasks. That explains the speedups we got in the above tables.
+
+* Workload distribution
+
+  For the **random** case, the  workload is not perfectly balanced where the randomness results in more prediction failures. The number of iterations in each sub-tasks also varies a lot.  Meanwhile, this algorithm needs to have a gigantic memory for the task queues, target suffixes lists, RB-tree, etc. The overhead of memory load and store operations for multiple threads might cost more than single thread execution, which will release the resources for the next task. The **alphabet** string has almost the same scale for each sub-tasks and each thread will run into the very last iteration. The memory requirements are relatively smaller than the first test case.  The RB-tree is simpler because the suffixes have the same prefixes as the keys. The task queue is therefore shorter because of the fewer nodes on the RB-tree. As for the **hard** test case, the input string is `aaa...aaab` so all the suffixes will be assigned to the same task (thread), which means the program is running in sequential no matter how many threads are designated. Therefore, in the worst case, this implementation is unable to parallel the program. Silk might help with the work load balance issue by spawning a thread for every new task. However, in that case, the task granularity is smaller and the number of threads will be doubled as least. The overhead for thread management will increase.
+
+##### Parallel the algorithm that uses radix sorting
+
+* **Vectorization**
+
+  Since the vectorization is enabled with `-O3` g++ optimization level by default, we benchmark the baseline with vectorization. Here is the results without vectorization, after compiled by `make OPTIONS="-fno-tree-vectorize"`.
+
+  The runtime of programs without g++ vectorization:
+
+  |                           | Random | Alphabet |   Hard   |
+  | :-----------------------: | :----: | :------: | :------: |
+  |        Brute Force        | 19.397 | 2240.824 | 3731.075 |
+  |    Divide and conquer     | 19.288 | 759.704  | 1165.561 |
+  | Construct with radix sort | 2.411  |  11.297  |  7.532   |
+  |      Skew algorithm       | 4.063  |  3.662   |  3.076   |
+
+  The difference between runtime with and without vectorization is trivial. There are multiple reasons. First, the **fraction of vectorizable loop** is small. Most of the traversals in the algorithms have strong dependency and have to run in order. Second, the bottleneck is more like the **memory accessing** instead of arithmetic computation. No locality optimization is found to be useful. Finally, there are still more optimizations applied by the compiler, such as loop unrolling, prediction, etc. Therefore the vectorization is possibly replaced with loop unrolling. Though the result is not ideal, the process of finding potential vectorizable code and analyzing the dependency is more meaningful for us to develop better programs in the future.
+
+* **Multi-thread atomic addition, OpenMP local sum, GPU inclusive scan**
+
+  Compile and run the program by anyone of these commands:
+
+  ```bash
+  # Remember to run `make clean` if nothing is compiled
+  make OPTIONS="-DATOMIC_RADIX" # Multi-thread atomic addition
+  make OPTIONS="-DOMP_RADIX" # OpenMP local sum
+  make OPTIONS="-DUSE_CUDA" # GPU inclusive scan
+  make OPTIONS="-DOMP_RADIX -DUSE_CUDA" # Use both OpenMP local sum and GPU inclusive scan
+  # run the program with different problem sets. Add -t to specify number of threads used for atomic and OpenMP
+  ./suffixarray -r
+  ./suffixarray -a
+  ./suffixarray -h
+  ```
+
+  These strategies are only used in the radix sorting algorithm. We benchmarked the results as below:
+
+  |                                    | Random | Alphabet |  Hard  |
+  | :--------------------------------: | :----: | :------: | :----: |
+  | Sequential radix sort construction | 2.411  |  11.297  | 7.532  |
+  |          Atomic addition           | 9.552  |  34.875  | 45.766 |
+  |  OpenMP local sum with 8 threads   | 5.541  |  13.397  | 10.096 |
+  |         GPU inclusive scan         | 20.229 |  29.931  | 27.520 |
+  |   OpenMP with 8 threads and GPU    | 22.910 |  33.016  | 29.118 |
+
+  We can observe that none of these strategies is helpful to accelerate. The common reason is about the low arithmetic intensity. For atomic operations and the reduction in the OpenMP, the **cost for synchronization** is much more than the sequential arithmetic computation runtime. For the GPU computation, the **cost for data transfer** is more expensive than doing the prefix sum sequentially on CPU. The more threads we use for these programs, the more overhead of synchronization is needed, and the runtime increases more. The more feasible applications for these strategies are to conduct more complex calculation between two synchronization or between two data transfers.
+
+  In these cases, the problem sets have no noticeable influence on the performance. The overhead brought by these parallel operations is propotional to the amount of computation of the sequential version.
+
+  Specifically analyzing on OpenMP local sum, we tried different OpenMP APIs for the reduction. The difference is negligible. Compared to the sequential execution where each element only requires one arithmetic operation, the OpenMP is actually doing more than we expected. 
+
+  For the GPU inclusive scan, though we use the optimal thrust library, the frequent data transfers from host to device and backwards largely reduce the speed. Because the dependency for other code snippets, we are not able to delegate all the work to GPU. Thus, the frequent data transfers have to be kept.
 
 ##### Summary
 
-In general, the suffix array algorithms involve much more dependency than the projects we had in this semester. Since it's essentially a sorting algorithm, the order and the tricks in the algorithm have significant influence on the parallelism. Unlike the rendering programs in assignment 1 and 2, where different grids can be computed independently and multiple iterations are performed for the grids, the suffix array has no iterative updates. The algorithms have extremely optimized time complexity so some sequential execution must be guaranteed for correct result. Because the algorithms for suffix array do not have iterative updates, the critical synchronization in between all the traversals makes the arithmetic intensity much lower than those programs favorable for parallelism. In addition, unlike the wire routing programs in assignment 3 and 4, this suffix array construction needs to realize an exactly correct result. The communication in the wire routing programs is about the tradeoff between speed performance and accuracy so computation on different data can run simultaneously. However, the communication in the suffix array is strictly required, which also makes the suffix array not a perfect algorithm for parallelizing. 
+In general, the suffix array algorithms involve much more dependency than the projects we had in this semester. Since it's essentially a sorting algorithm, the order and the tricks in the algorithm have significant influence on the parallelism. Unlike the rendering programs in assignment 1 and 2, where different grids can be computed independently and multiple iterations are performed for the grids, the suffix array has no iterative updates. The algorithms have **extremely optimized time complexity** so some sequential execution must be guaranteed for correct result. Because the algorithms for suffix array do not have iterative updates, the **critical synchronization** in between all the traversals makes the **arithmetic intensity** much lower than those programs favorable for parallelism. In addition, unlike the wire routing programs in assignment 3 and 4, this suffix array construction needs to realize an exactly correct result. The communication in the wire routing programs is about the tradeoff between speed performance and accuracy so computation on different data can run simultaneously. However, the **communication in the suffix array is strictly required**, which also makes the suffix array not a perfect algorithm for parallelizing.
+
+The results of the parallel strategies show that the simplest algorithm, divide and conquer, is straightforward to parallelize. And the speedups can reach near linear-trend in certain cases. The more complicated radix sorting algorithm has strong dependency and in-order requirement. The fraction of code that seems parallelizable is smaller and the results confirm that the elaborate algorithm provides no space for parallel optimization. The most complicated O(n) algorithm is hard to understand. The carefully implemented sequential code makes it harder to parallel.  
+
+
+
+### References
+
+1. Description of O(nlogn) algorithm: https://cp-algorithms.com/string/suffix-array.html 
+2. Original paper on skew algorithm: http://www.cs.cmu.edu/~guyb/paralg/papers/KarkkainenSanders03.pdf
+3. Idea about parallel general radix sort: https://summerofhpc.prace-ri.eu/fastest-sorting-algorithm-for-distributed-systems-parallel-radix-sort-difficulty-medium/
+4. A very recent algorithm for O(n) construction with constant space: https://arxiv.org/pdf/1610.08305.pdf
+5. Algorithm by Manner and Myers: https://courses.cs.washington.edu/courses/cse590q/00au/papers/manber-myers_soda90.pdf
+6. Official documents about SIMD, C++ Atomic, OpenMP, thrust library
+
+
+
+### List of work and distribution
+
+* Chengji Yu - 80%
+  * Participated in literature review and proposal
+  * Implemented sequential algorithms in C++
+  * Optimized the sequential brute force algorithm on memory usage and data structures
+  * Developed the parallel strategies mentioned in this report
+  * Designed and implemented the problem sets, test scripts, compile options
+  * Benchmarked the runtime for different algorithms and parallel strategies
+  * Completed the milestone report, final report, and final recording
+
+* Sree Revoori - 20%
+  * Mainly worked on literature search and review
+  * Completed the proposal
+  * Implemented sequential algorithms in sml language

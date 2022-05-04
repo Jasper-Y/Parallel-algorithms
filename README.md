@@ -138,37 +138,3 @@ The general goals remain the same. We have done the algorithm search and obtaine
 * Note that according to the benchmark, the Myers algorithm performs worse than the radix sorting though they have the same time complexity. This is probably related to implementation details. We have already adopted RB-tree for acceleration. This introduces some more work we have to deal with. One hypothesis is the iterative Myers algorithm requires a large queue to store the tasks, while the recursive Myers algorithm might have a really deep recursion stack. Therefore, the theoretical arithmatic time complexity is the same as radix sorting but actual behavior related to storage is worse.
 * The skew algorithm we use is complex and did not perform well than the radix sorting. The implementation of skew algorithm is tricky so we do not plan to parallel the skew algorithm but will mainly focus on the radix sorting algorithm. We hope to use this comparison to prove our hypothesis that the solution with the optimal time complexity isn't always the best choice in parallel applications.
 
-## FINAL REPORT
-
-#### Updated benchmark
-
-| Algorithm              | O(n<sup>2</sup>logn) brute force | O(nlogn) Myers algorithm | O(nlogn) radix sorting | O(n) skew algorithm |
-| ---------------------- | -------------------------------- | ------------------------ | ---------------------- | ------------------- |
-| Sequential runtime (s) | 0.022553                         | 0.032577                 | 0.002393               | 0.004756            |
-
-
-### Approaches
-
-* Optimize data storage and representation
-
-  Reduce the memory usage. This might be helpful for the memory bottleneck.
-
-* cilk might be helpful
-
-  For our existing Myers algorithm, it can better balance the work load among different threads. Currently we only spread the tasks at the first loop. So each individual task has a number of huge sub-tasks. 
-  
-* Another issue is the sequential code in the first loop.
-
-  To build a RB tree, it seems like hard to parallel.
-
-* Parallel radix sort
-
-  This idea is inspired from the general radix sort where each processors sort part of the data based on a uniform key digit. Then they sends and receives the specific portion of data from other processors and proceeds to the next digit. For instance, 5 processors process integers. For the first iteration, each processor sorts its own data, keeps the data ends with i/N and sends out others. The first processor has xxx..xx0 and xxx..xx1. The second has xxx..xx2 and xxx..xx3. Then they sort the exchanged data based on the 2nd digit. And now first processor keeps and receives xxx..xx0x and xxx..xx1x.
-  
-  However, the difference is the range of the digit in suffix array. At first, there are 26 different characters (assume we constrain the input within alphabet) so the range of the digit is [0, 25]. In the last iteration, since all the suffix arrays are different, the labels are [0, n - 1]. So in this case, it's hard to statically assign which portion of data to send where and what to receive from which processor.
-
-* Fully parallel in the counting sort
-
-  For the radix sort algorithm, we traverse the whole array many times in the counting sort. We also traverse arrays outside the counting sort. For the traversal inside the counting sort, I am trying to use vectorization, ISPC, parallel prefix sum to test. Many for loops have been optimized by the compiler for vectorization. Some of them have strong dependency on the adjacent data so it will not benefit from vectorizations, for example, the increasing `p`. On the other hand, the loop in counting sort is adding the `cnt` array. I am trying to test atomic addition between threads. Another solution is to accumulate on local `cnt` array and finally do a reduction. Finally, the parallel prefix sum should work for a large bucket size.
-
-  
