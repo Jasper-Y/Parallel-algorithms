@@ -147,7 +147,7 @@ int main(int argc, char *argv[]) {
         sa_serial(str, n, serial_output);
     }
     serial_time += duration_cast<dsec>(Clock::now() - start_time).count();
-    printf("Serial brute force:\t\t\t%f\n\n", serial_time / num_run);
+    printf("Serial brute force:\t\t%f\n\n", serial_time / num_run);
     // for (auto i : serial_output) {
     //     std::cout << i << ": " << str.substr(i, n - i) << std::endl;
     // }
@@ -181,7 +181,7 @@ int main(int argc, char *argv[]) {
         duration_cast<dsec>(Clock::now() - start_time).count();
     check_result(serial_output, divideconquer_output, n,
                  "divide and conquer algorithm");
-    printf("Divide and conquer algorithm:\t\t%f\n\n",
+    printf("Divide and conquer algorithm:\t%f\n\n",
            divideconquer_time / num_run);
 
     // Skew algorithm
