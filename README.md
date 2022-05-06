@@ -138,3 +138,6 @@ The general goals remain the same. We have done the algorithm search and obtaine
 * Note that according to the benchmark, the Myers algorithm performs worse than the radix sorting though they have the same time complexity. This is probably related to implementation details. We have already adopted RB-tree for acceleration. This introduces some more work we have to deal with. One hypothesis is the iterative Myers algorithm requires a large queue to store the tasks, while the recursive Myers algorithm might have a really deep recursion stack. Therefore, the theoretical arithmatic time complexity is the same as radix sorting but actual behavior related to storage is worse.
 * The skew algorithm we use is complex and did not perform well than the radix sorting. The implementation of skew algorithm is tricky so we do not plan to parallel the skew algorithm but will mainly focus on the radix sorting algorithm. We hope to use this comparison to prove our hypothesis that the solution with the optimal time complexity isn't always the best choice in parallel applications.
 
+
+
+## [Final report](./final_report.md)

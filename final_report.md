@@ -5,7 +5,7 @@ Members: Chengji Yu (chengji2), Sree Revoori (srevoori)
 
 ### Summary
 
-We tried different parallel strategies on different algorithms for suffix array construction mainly on the CPU but also tried on GPU. Observing the speedup or the drop-off we got from different strategies, we proposed our explanation and our analysis on the trade-off between simple parallelizable algorithms and elaborate serial algorithms with high-efficiency.
+We tried different parallel strategies on different algorithms for suffix array construction mainly on the CPU but also tried on GPU. Observing the speedup or the drop-off we got from different strategies, we proposed our explanation and our analysis on the trade-off between simple parallelizable algorithms and elaborate serial algorithms with high efficiency.
 
 
 
@@ -61,7 +61,7 @@ We adopted four algorithms and implemented the sequential version of them.
 
   The computational expense is mainly about storage. We tried both iterative and recursive implementation. The large queue for iteration and the overhead for deep recursion would influence the performance. Though the two have similar performance after optimization, it still requires more memory operation than any in-place sorting.
 
-  The good thing is the obvious potential parallelism between subtasks. If the length of the list on the leaf is one, then there won't be any further task. If not, then the new target list of suffixes is unique among all the leaves and the tasks should be fully independent. Therefore, simple multi-tasks parallelism should work. In general cases, the sequential part is only the first RB tree construction and the propotion of parallelism should be fairly high.
+  The good thing is the obvious **potential parallelism between subtasks**. If the length of the list on the leaf is one, then there won't be any further task. If not, then the new target list of suffixes is unique among all the leaves and the tasks should be **fully independent**. Therefore, simple multi-tasks parallelism should work. In general cases, the sequential part is only the first RB tree construction and the propotion of parallelism should be fairly high.
 
 * **Construct with radix sorting**
 
@@ -69,7 +69,7 @@ We adopted four algorithms and implemented the sequential version of them.
 
   <img src="final_report.assets/radix.png" alt="img" style="zoom:60%;" />
 
-  The algorithm implementation is more subtle and the data has strong connection with each other. Many `for` loops require to be run in order. That's being said, the data has a strong dependency. This not only makes it difficult to parallel, but also introduces cache conflicts to lower the speed. The parallelizable part of the implementation still exists and it has the potential to benefit from SIMD execution, vectorization, GPU execution, etc. 
+  The algorithm implementation is more subtle and the data has strong connection with each other. Many `for` loops require to be run in order. That's being said, the data has a **strong dependency**. This not only makes it difficult to parallel, but also introduces cache conflicts to lower the speed. The parallelizable part of the implementation still exists and it has the potential to benefit from SIMD execution, vectorization, GPU execution, etc. 
 
 * **Skew algorithm**
 
@@ -186,7 +186,7 @@ Most steps of this algorithm are traversing the whole array in order. And the va
 
 We look forward to optimizing different algorithms to see the changes from sequential to parallel implementations. We measure the time for solving different problems and the less time it costs, the better performance this algorithm has. The time unit in this report is in **milliseconds**.
 
-As mentioned in the [problem sets](#problem-sets) section, we use three ways to construct the input string. The default string is generated randomly between 1 to 127. Another test case is to sort the string with the same characters except the last one, i.e., `aaaa...aaab` so that most of the suffixes are not able to be distringuished until we compare the characters in the end. For most algorithms we use, this is supposed to be the worst case. The last test string is designed to be the easiest case, however, it is actually more complicated than the random string. We duplicate the alphabets from `a` to `z` so this string is `abcd...xyzabc...`. Intuitively the adjacent suffixes can be easily distinguished so we thought this might outperform all other cases. Actually, the suffixes with interleaves of a multiple of 26 start with the identical characters so if they are grouped into the sub-tasks, it would require more time to sort them. We use **random**, **alphabet**, **hard** to represent these three problem sets.
+As mentioned in the [problem sets](#problem-sets) section, we use three ways to construct the input string. The default string is generated randomly between 1 to 127. Another test case was designed to be the easiest case, however, it is actually more complicated than the random string. We duplicate the alphabets from `a` to `z` so this string is `abcd...xyzabc...`. Intuitively the adjacent suffixes can be easily distinguished so we thought this might outperform all other cases. Actually, the suffixes with interleaves of a multiple of 26 start with the identical characters so if they are grouped into the sub-tasks, it would require more time to sort them. The last test string was the string with the same characters except the last one, i.e., `aaaa...aaab` so that most of the suffixes are not able to be distringuished until we compare the characters in the end. For most algorithms we use, this is supposed to be the worst case. We use **random**, **alphabet**, **hard** to represent these three problem sets.
 
 Since the suffix array construction focuses more on the time cost with a large input data size, we unify the length to 90000 for all the input string. The varying conditions for experiments are problem sets, number of threads, and parallel options. Here we use single thread with default vectorization as the baseline.
 
@@ -331,3 +331,11 @@ The results of the parallel strategies show that the simplest algorithm, divide 
   * Mainly worked on literature search and review
   * Completed the proposal
   * Implemented sequential algorithms in sml language
+
+
+
+### Recording
+
+https://cmu.box.com/s/s9xwb8telz0ho29jgfbhzmhyvtvjzq9p
+
+Please log in with your CMU account.
